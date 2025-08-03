@@ -39,7 +39,7 @@ class RoutineController {
 
     @PostMapping
     public ResponseEntity<?> createRoutine(@RequestBody Routine routine) {
-    if (routine.getName().isEmpty()) {
+    if (routine.getName().isEmpty() || routine.getRecurrence().isEmpty()) {
         return ResponseEntity.badRequest().build();
     }
         return ResponseEntity.ok(routineService.createRoutine(routine));

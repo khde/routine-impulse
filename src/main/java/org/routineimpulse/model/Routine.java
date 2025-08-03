@@ -19,11 +19,13 @@ public class Routine {
     private long id;
 
     private String name;
+
+    private String recurrence;
     
     @Column(updatable = false)
     private String description;
 
-    @Column(name = "create_date")
+    @Column(name = "create_date", updatable = false)
     private LocalDateTime createDate;
 
     @Column(name = "modify_date")
@@ -32,11 +34,12 @@ public class Routine {
     public Routine() {
     }
 
-    public Routine(String name, String description) {
+    public Routine(String name, String description, String recurrence) {
         this.name = name;
         this.description = description;
+        this.recurrence = recurrence;
         this.createDate = LocalDateTime.now();
-        this.modifyDate= LocalDateTime.now();
+        this.modifyDate = LocalDateTime.now();
     }
 
     @PrePersist
@@ -68,6 +71,14 @@ public class Routine {
 
     public void setDescripton(String description) {
         this.description = description;
+    }
+
+    public String getRecurrence() {
+        return recurrence;
+    }
+
+    public void setRecurrence(String recurrence) {
+        this.recurrence = recurrence;
     }
 
     public LocalDateTime getCreationDate() {
