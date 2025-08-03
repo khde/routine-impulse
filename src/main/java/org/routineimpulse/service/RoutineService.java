@@ -33,8 +33,8 @@ public class RoutineService {
         return routines;
 
     }
-    public Routine createRoutine() {
-        return routineRepository.save(new Routine());
+    public Routine createRoutine(Routine routine) {
+        return routineRepository.save(routine);
     }
 
     public void deleteRoutine(Long id) {
