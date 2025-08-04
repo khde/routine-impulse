@@ -6,14 +6,18 @@ import java.util.ArrayList;
 import org.springframework.stereotype.Service;
 
 import org.routineimpulse.repository.RoutineRepository;
+import org.routineimpulse.repository.CompletionRepository;
 import org.routineimpulse.model.Routine;
+import org.routineimpulse.model.Completion;
 
 @Service
 public class RoutineService {
     private final RoutineRepository routineRepository;
+    private final CompletionRepository completionRepository;
 
-    public RoutineService(RoutineRepository routineRepository) {
+    public RoutineService(RoutineRepository routineRepository, CompletionRepository completionRepository) {
         this.routineRepository = routineRepository;
+        this.completionRepository = completionRepository;
     }
 
     public Routine getRoutine(Long id) {
@@ -39,6 +43,11 @@ public class RoutineService {
 
     public void deleteRoutine(Long id) {
         routineRepository.deleteById(id);
+    }
+
+    public ArrayList<Completion> getCompletionsByRoutineId(Long id) {
+        ArrayList<Completion> completions = completionRepository.findByRoutineId(id);
+        return completions;
     }
 }
 

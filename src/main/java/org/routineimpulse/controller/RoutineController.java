@@ -51,9 +51,12 @@ class RoutineController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/activity")
-    public ResponseEntity<?> getRoutinesActivity() {
-        return ResponseEntity.ok("Activity");
+    @GetMapping("/{id}/activity")
+    public ResponseEntity<?> getRoutinesActivity(@PathVariable Long id) {
+        if (routineService.getRoutine(id) != null) {
+            return ResponseEntity.ok(routineService.getCompletionsByRoutineId(id));
+        } 
+        return ResponseEntity.notFound().build();
     }
 }
 
