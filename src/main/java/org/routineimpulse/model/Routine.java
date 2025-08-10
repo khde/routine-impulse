@@ -2,6 +2,7 @@ package org.routineimpulse.model;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
@@ -26,9 +27,11 @@ public class Routine {
     private String description;
 
     @Column(name = "create_date", updatable = false)
+    @JsonFormat(pattern = "dd-MM-yyyy hh:mm:ss")
     private LocalDateTime createDate;
 
     @Column(name = "modify_date")
+    @JsonFormat(pattern = "dd-MM-yyyy hh:mm:ss")
     private LocalDateTime modifyDate;
 
     public Routine() {
@@ -81,19 +84,19 @@ public class Routine {
         this.recurrence = recurrence;
     }
 
-    public LocalDateTime getCreationDate() {
+    public LocalDateTime getCreateDate() {
         return createDate;
     }
 
-    public void setCreationDate(LocalDateTime date) {
+    public void setCreateDate(LocalDateTime date) {
         createDate = date;
     }
 
-    public LocalDateTime getUpdateDate() {
+    public LocalDateTime getModifyDate() {
         return modifyDate;
     }
 
-    public void setUpdateDate(LocalDateTime date) {
+    public void setModifyDate(LocalDateTime date) {
         modifyDate = date;
     }
 }
