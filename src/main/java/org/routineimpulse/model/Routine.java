@@ -3,6 +3,7 @@ package org.routineimpulse.model;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
@@ -17,21 +18,23 @@ import jakarta.persistence.PreUpdate;
 public class Routine {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private long id;
 
     private String name;
 
     private String recurrence;
     
-    @Column(updatable = false)
     private String description;
 
     @Column(name = "create_date", updatable = false)
     @JsonFormat(pattern = "dd-MM-yyyy hh:mm:ss")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime createDate;
 
     @Column(name = "modify_date")
     @JsonFormat(pattern = "dd-MM-yyyy hh:mm:ss")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime modifyDate;
 
     public Routine() {
@@ -58,6 +61,10 @@ public class Routine {
 
     public long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
