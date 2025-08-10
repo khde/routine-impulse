@@ -1,7 +1,9 @@
 package org.routineimpulse.model;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
@@ -9,9 +11,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
 
 @Entity
-@Table(name = "Users")
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,6 +32,10 @@ public class User {
 
     @Column(name = "create_date", updatable = false)
     private LocalDateTime createDate;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Routine> routines;
 
     public User() {
     }

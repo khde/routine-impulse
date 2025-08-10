@@ -15,6 +15,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.CascadeType;
 
 @Entity
@@ -40,6 +43,11 @@ public class Routine {
     @JsonFormat(pattern = "dd-MM-yyyy hh:mm:ss")
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime modifyDate;
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @JsonIgnore
     @OneToMany(mappedBy = "routine", cascade = CascadeType.ALL, orphanRemoval = true)
