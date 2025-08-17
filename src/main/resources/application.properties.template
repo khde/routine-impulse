@@ -10,3 +10,6 @@ spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 springdoc.api-docs.enabled=true
 springdoc.swagger-ui.enabled=true
 springdoc.swagger-ui.path=/swagger
+
+routineimpulse.jwt.secret-key=key
+routineimpulse.jwt.expiration-time=3600000
