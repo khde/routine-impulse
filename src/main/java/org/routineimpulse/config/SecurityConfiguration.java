@@ -28,8 +28,8 @@ public class SecurityConfiguration {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(req -> req
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/", "index.html", "login.html").permitAll()
-                .anyRequest().authenticated())
+                .requestMatchers("/api/**").authenticated()
+                .anyRequest().permitAll())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
