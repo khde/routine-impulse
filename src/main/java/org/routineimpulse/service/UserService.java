@@ -3,6 +3,7 @@ package org.routineimpulse.service;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import org.routineimpulse.repository.UserRepository;
 import org.routineimpulse.model.User;
@@ -36,5 +37,21 @@ public class UserService {
         else {
             return null;
         }
+    }
+
+    public User getCurrentUser() {
+        String username = getCurrentUsername();
+        Optional<User> user = userRepository.findByUsername(username);
+
+        if (user.isPresent()) {
+            return user.get();
+        } else {
+            return null;
+        }
+    }
+
+    public String getCurrentUsername() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return username;
     }
 }
