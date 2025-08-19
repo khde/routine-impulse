@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.ArrayList;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import org.routineimpulse.repository.RoutineRepository;
 import org.routineimpulse.repository.CompletionRepository;
@@ -53,7 +54,8 @@ public class RoutineService {
 
         return routineRepository.save(routine);
     }
-
+    
+    @Transactional
     public void deleteRoutine(Long id) {
         User user = userService.getCurrentUser();
         routineRepository.deleteByIdAndUserId(id, user.getId());
