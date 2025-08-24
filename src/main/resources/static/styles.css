@@ -1,0 +1,73 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background: #1a1a1a;
+    color: #e0e0e0;
+    line-height: 1.6;
+}
+
+.topbar {
+    background: #121212;
+    padding: 15px 20px;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.topbar .topbar-links a {
+    color: #e0e0e0;
+    text-decoration: none;
+    margin-left: 20px;
+    font-size: 1rem;
+    transition: color 0.3s;
+}
+
+.topbar .topbar-links a:hover {
+    color: #00ddeb;
+}
+
+.hero {
+    background: linear-gradient(135deg, #2a2a6b, #004d57);
+    color: #e0e0e0;
+    padding: 120px 20px 100px;
+    text-align: center;
+}
+
+.features {
+    padding: 50px 20px;
+    text-align: center;
+    background: #222222;
+}
+
+.how-it-works {
+    padding: 50px 20px;
+    text-align: center;
+    background: #1a1a1a;
+}
+
+.open-source {
+    padding: 50px 20px;
+    text-align: center;
+    background: #121212;
+}
+
+.cta {
+    padding: 50px 20px;
+    text-align: center;
+    background: linear-gradient(135deg, #2a2a6b, #004d57);
+    color: #e0e0e0;
+}
+
+.footer-links {
+    background: #121212;
+    color: #e0e0e0;
+    text-align: center;
+    padding: 20px;
+}
