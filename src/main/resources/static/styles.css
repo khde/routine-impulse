@@ -126,3 +126,14 @@ h2 {
     text-align: center;
     padding: 20px;
 }
+
+.footer-links a {
+    color: #e0e0e0;
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+.footer-links a:hover {
+    color: #00ddeb;
+}
+
