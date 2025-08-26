@@ -11,6 +11,21 @@ body {
     line-height: 1.6;
 }
 
+h2 {
+    font-size: 2rem;
+    margin-bottom: 40px;
+}
+
+.button {
+    background: #ff6f61;
+    color: white;
+    padding: 12px 24px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
 .topbar {
     background: #121212;
     padding: 15px 20px;
@@ -21,7 +36,21 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.topbar .topbar-links a {
+.topbar nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.topbar .logo {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #00ddeb;
+}
+
+.topbar .nav-links {
     color: #e0e0e0;
     text-decoration: none;
     margin-left: 20px;
@@ -29,15 +58,33 @@ body {
     transition: color 0.3s;
 }
 
-.topbar .topbar-links a:hover {
+.topbar .nav-links a {
+    color: #e0e0e0;
+    text-decoration: none;
+    margin-left: 20px;
+    font-size: 1rem;
+    transition: color 0.3s;
+}
+
+.topbar .nav-links a:hover {
     color: #00ddeb;
 }
 
 .hero {
     background: linear-gradient(135deg, #2a2a6b, #004d57);
     color: #e0e0e0;
-    padding: 120px 20px 100px;
     text-align: center;
+    padding: 120px 20px 100px;
+}
+
+.hero-content h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+.hero-content p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
 }
 
 .features {
@@ -58,11 +105,19 @@ body {
     background: #121212;
 }
 
+.open-source p {
+    margin-bottom: 30px;
+}
+
 .cta {
     padding: 50px 20px;
     text-align: center;
     background: linear-gradient(135deg, #2a2a6b, #004d57);
     color: #e0e0e0;
+}
+
+.cta p {
+    margin-bottom: 30px;
 }
 
 .footer-links {
