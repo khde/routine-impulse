@@ -75,6 +75,10 @@ h2 {
     color: #e0e0e0;
     text-align: center;
     padding: 120px 20px 100px;
+    min-height: 60vh;
+    justify-content: center;
+    display: flex;
+    align-items: center;
 }
 
 .hero-content h1 {
