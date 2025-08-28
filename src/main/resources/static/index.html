@@ -3,101 +3,67 @@
 <head>
     <title>Routine Impulse - Home</title>
     <meta charset="UTF-8">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-        }
-
-        .topbar {
-            background-color: #2c3e50;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .topbar .logo a {
-            color: white;
-            font-size: 1.8em;
-            font-weight: bold;
-            text-decoration: none;
-        }
-
-        .topbar nav ul {
-            list-style-type: none;
-            display: flex;
-            gap: 20px;
-        }
-
-        .topbar nav a {
-            color: white;
-            text-decoration: none;
-            font-size: 1.1em;
-            transition: color 0.3s;
-        }
-
-        .topbar nav a:hover {
-            color: #3498db;
-        }
-
-        .content {
-            text-align: center;
-            padding: 40px 20px;
-        }
-
-        .content h1 {
-            color: #2c3e50;
-            font-size: 2.2em;
-            margin-bottom: 15px;
-        }
-
-        .content p {
-            color: #34495e;
-            font-size: 1.2em;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <script>
-        async function fetchRoutines() {
-            const routinesList = document.getElementById('routine-list');
-
-            const response = await fetch('http://localhost:8080/api/routine');
-            const routines = await response.json();
-
-            routines.forEach(routine => {
-                const li = document.createElement('li');
-                li.textContent = routine.name
-                routinesList.appendChild(li);
-            });
-        }
-        document.addEventListener('DOMContentLoaded', fetchRoutines);
-    </script>
-    <header>
-        <div class="topbar">
-            <div class="logo">
-                <a href="index.html">Routine Impulse</a>
+    <header class="topbar">
+        <nav>
+            <a href="index.html" class="logo">Routine Impulse</div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="login.html">Login</a>
             </div>
-            <nav>
-                <ul>
-                    <li><a href="login.html">Login</a></li>
-                </ul>
-            </nav>
-        </div>
+        </nav>
     </header>
-    <main class="content">
-        <h1>Welcome to Routine Impulse</h1>
-        <p>Start tracking your habits and boost your productivity with Routine Impulse</p>
-        <div id="routine-list"></div>
-    </main>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Transform Your Life with Routine Impulse</h1>
+            <p>Build lasting habits, track progress, and achieve your goals with ease.</p>
+            <a href="register.html" class="button">Sign up</a>
+        </div>
+    </section>
+    <section class="features">
+        <h2>Features</h2>
+        <div>
+            <div>
+                <h3>Habit Tracking</h3>
+                <p>Log daily habits with customizable categories like fitness or productivity.</p>
+            </div>
+            <div>
+                <h3>Progress Insights</h3>
+                <p>Visualize streaks and trends with intuitive charts.</p>
+            </div>
+            <div>
+                <h3>Reminders</h3>
+                <p>Stay on track with personalized notifications.</p>
+            </div>
+        </div>
+    </section>
+    <section class="how-it-works">
+        <h2>Your Path to Better Habits</h2>
+        <p>1. Sign up and set your habits.</p>
+        <p>2. Track daily with simple check-ins.</p>
+        <p>3. Review progress with analytics.</p>
+        <p>4. Stay motivated with rewards.</p>
+    </section>
+    <section class="open-source">
+        <h2>Free & Open Source</h2>
+        <p>Routine Impulse is free and open-source</p>
+        <a href="https://github.com/khde/Routine-Impulse" class="button">Visit GitHub Repository</a>
+    </section>
+    <section class="cta">
+        <h2>Get Started Today</h2>
+        <p>Try Routine Impulse for free and start building better habits.</p>
+        <a href="register.html" class="button">Try it out</a>
+    </section>
+    <footer>
+        <div class="footer-links">
+            <a href="about">About</a>
+            <a href="contact">Contact</a>
+        </div>
+    </footer>
 </body>
 </html>
