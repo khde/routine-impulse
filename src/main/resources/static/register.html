@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Routine Impulse - Login</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">   
+    <style>
+        .login-area {
+            background: linear-gradient(135deg, #2a2a6b, #004d57);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-box {
+            background: #282C35;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: left;
+        }
+
+        .login-box h2 {
+            margin-bottom: 0px;
+            color: white;
+        }
+
+        .login-box h3 {
+            margin-bottom: 20px;
+            color: grey;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+            color: white;
+        }
+
+        .form-group input {
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            background: #222222;
+        }
+
+        .form-group input::placeholder{
+            font-size: 14px;
+            color: grey;
+        }
+
+        .register-link {
+            color: #95c1d3;
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <nav>
+            <a href="index.html" class="logo">Routine Impulse</div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="login.html">Login</a>
+            </div>
+        </nav>
+    </header>
+    <div class="login-area">
+        <div class="login-box">
+            <h2>Register</h2>
+            <h3>Create a account</h3>
+            <form class="login-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="Enter Email" required>
+                </div>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Enter Username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter Password" required>
+                </div>
+                <button type="submit" class="button">Create</button>
+            </form>
+            <a href="login.html" class="register-link">Login</a>
+        </div>
+    </div>
+</body>
+</html>
