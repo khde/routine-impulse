@@ -6,16 +6,27 @@
     <title>Routine Impulse - Dashboard</title>
     <link rel="stylesheet" href="styles.css">
     <style>
+        body {
+            background: linear-gradient(135deg, #2a2a6b, #004d57);
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
         .container {
             display: flex;
             min-height: 100vh;
         }
 
         .menu {
+            background: #282C35;
             width: 150px;
             border-right: 1px solid #ccc;
             padding: 20px;
+            position: fixed;
+            height: 100vh; 
+            top: 60px;
         }
+
         .menu button {
             display: block;
             width: 100%;
@@ -29,6 +40,14 @@
     </style>
 </head>
 <body>
+    <header class="topbar">
+        <nav>
+            <a href="index.html" class="logo">Routine Impulse</div>
+            <div class="nav-links">
+                <a href="login.html">Login</a>
+            </div>
+        </nav>
+    </header>
     <div class="container">
         <div class="menu">
             <button class="button">Overview</button>
