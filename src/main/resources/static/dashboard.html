@@ -8,8 +8,6 @@
     <style>
         body {
             background: linear-gradient(135deg, #2a2a6b, #004d57);
-            color: #e0e0e0;
-            line-height: 1.6;
         }
 
         .container {
@@ -17,27 +15,30 @@
             min-height: 100vh;
         }
 
-        .menu {
-            background: #282C35;
-            width: 150px;
-            border-right: 1px solid #ccc;
-            padding: 20px;
-            position: fixed;
-            height: 100vh; 
-            top: 60px;
+        .sidebar {
+            width: 200px;
+            background: #2a2a2a;
         }
 
-        .menu button {
+        .sidebar button {
+            margin: 5px;
+            font-size: 1em;
             display: block;
             width: 100%;
-            padding: 10px;
-            margin-bottom: 5px;
             border: none;
-            background: grey;
-            cursor: pointer;
-            text-align: left;
+            text-align: middle;
         }
-    </style>
+
+        .selection {
+            width: 400px;
+            padding: 10px;
+        }
+
+        .content {
+            width: 100%;
+            padding: 10px;
+        }
+     </style>
 </head>
 <body>
     <header class="topbar">
@@ -49,10 +50,16 @@
         </nav>
     </header>
     <div class="container">
-        <div class="menu">
+        <div class="sidebar">
             <button class="button">Overview</button>
             <button class="button">Routines</button>
             <button class="button">Tasks</button>
+        </div>
+        <div class="selection">
+            <h2>Routines</h2>
+        </div>
+        <div class="content">
+            <h2>Daily Programming</h2>
         </div>
     </div>
 </body>
