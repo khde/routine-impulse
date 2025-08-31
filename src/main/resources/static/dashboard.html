@@ -38,12 +38,24 @@
             width: 100%;
             padding: 10px;
         }
-     </style>
+
+        .routine-item, .task-item {
+            cursor: pointer;
+            padding: 10px;
+            margin: 5px 0;
+            background: grey;
+            border-radius: 5px;
+        }
+
+        .routine-item:hover, .task-item:hover {
+            background: #e0e0e0;
+        }
+    </style>
 </head>
 <body>
     <header class="topbar">
         <nav>
-            <a href="index.html" class="logo">Routine Impulse</div>
+            <a href="index.html" class="logo">Routine Impulse</a>
             <div class="nav-links">
                 <a href="login.html">Login</a>
             </div>
@@ -51,16 +63,100 @@
     </header>
     <div class="container">
         <div class="sidebar">
-            <button class="button">Overview</button>
-            <button class="button">Routines</button>
-            <button class="button">Tasks</button>
+            <button class="button" id="overviewBtn">Overview</button>
+            <button class="button" id="routinesBtn">Routines</button>
+            <button class="button" id="tasksBtn">Tasks</button>
         </div>
         <div class="selection">
-            <h2>Routines</h2>
+            <h2 id="selectionTitle">Routines</h2>
+            <div id="selectionList"></div>
         </div>
         <div class="content">
-            <h2>Daily Programming</h2>
+            <h2 id="contentTitle">Daily Programming</h2>
+            <div id="contentDescription"></div>
         </div>
     </div>
+
+    <script>
+        const token = localStorage.getItem('authToken');
+
+        async function fetchWithAuth(url) {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                return null;
+            }
+        }
+
+        async function loadRoutines() {
+            const selectionList = document.getElementById('selectionList');
+            const contentTitle = document.getElementById('contentTitle');
+            const contentDescription = document.getElementById('contentDescription');
+            const selectionTitle = document.getElementById('selectionTitle');
+
+            selectionTitle.textContent = 'Routines';
+            selectionList.innerHTML = '';
+            contentTitle.textContent = 'Select a Routine';
+            contentDescription.textContent = '';
+
+            const routines = await fetchWithAuth('http://localhost:8080/api/routine');
+            if (routines) {
+                routines.forEach(routine => {
+                    const routineDiv = document.createElement('div');
+                    routineDiv.className = 'routine-item';
+                    routineDiv.textContent = routine.name;
+                    routineDiv.addEventListener('click', () => {
+                        contentTitle.textContent = routine.name;
+                        contentDescription.textContent = routine.description || 'No description available';
+                    });
+                    selectionList.appendChild(routineDiv);
+                });
+            }
+        }
+
+        async function loadTasks() {
+            const selectionList = document.getElementById('selectionList');
+            const contentTitle = document.getElementById('contentTitle');
+            const contentDescription = document.getElementById('contentDescription');
+            const selectionTitle = document.getElementById('selectionTitle');
+
+            selectionTitle.textContent = 'Tasks';
+            selectionList.innerHTML = '';
+            contentTitle.textContent = 'Select a Task';
+            contentDescription.textContent = '';
+
+            const tasks = await fetchWithAuth('http://localhost:8080/api/task');
+            if (tasks) {
+                tasks.forEach(task => {
+                    const taskDiv = document.createElement('div');
+                    taskDiv.className = 'task-item';
+                    taskDiv.textContent = task.name;
+                    taskDiv.addEventListener('click', () => {
+                        contentTitle.textContent = task.name;
+                        contentDescription.textContent = task.description || 'No description available';
+                    });
+                    selectionList.appendChild(taskDiv);
+                });
+            }
+        }
+
+        document.getElementById('routinesBtn').addEventListener('click', loadRoutines);
+        document.getElementById('tasksBtn').addEventListener('click', loadTasks);
+        document.getElementById('overviewBtn').addEventListener('click', () => {
+            // TODO
+        });
+
+        loadRoutines();
+    </script>
 </body>
 </html>
