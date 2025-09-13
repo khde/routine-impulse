@@ -20,7 +20,7 @@
         <div class="login-box">
             <h2>Login</h2>
             <h3>Sign in to your account</h3>
-            <form class="login-form">
+            <form class="login-form" id="loginForm">
                 <div class="form-group">
                     <label for="username">Username</label>
                     <input type="text" id="username" name="username" placeholder="Enter Username" required>
@@ -34,5 +34,38 @@
             <a href="register.html" class="register-link">Create account</a>
         </div>
     </div>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+
+            try {
+                const loginParams = new URLSearchParams({ username, password });
+                const loginUrl = `/api/auth/login?${loginParams.toString()}`;
+
+                const loginResponse = await fetch(loginUrl, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+
+                if (loginResponse.ok) {
+                    const jwt = await loginResponse.text();
+                    localStorage.setItem('jwt', jwt);
+                    window.location.href = '/dashboard.html';
+                } else {
+                    const errorData = await loginResponse.json();
+                    errorMessage.textContent = errorData.message || 'Something went wrong';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                errorMessage.textContent = 'An error occurred. Please try again later.';
+                errorMessage.style.display = 'block';
+                console.error('Error:', error);
+            }
+        });
+    </script>
 </body>
 </html>
