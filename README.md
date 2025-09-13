@@ -1,5 +1,5 @@
 # Routine Impulse
-
+![Logo](img/logo.png)
 ## Overview
 An application to help manage and track routines.
 
