@@ -1,5 +1,10 @@
-# Routine Impulse
-![Logo](img/logo.png)
+<p align="center">
+  <img src="img/logo.png" alt="Logo" width="200"/>
+</p>
+
+<h1 align="center">Routine Impulse
+
+
 ## Overview
 An application to help manage and track routines.
 
