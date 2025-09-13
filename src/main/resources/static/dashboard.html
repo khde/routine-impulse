@@ -78,13 +78,17 @@
     </div>
 
     <script>
-        const token = localStorage.getItem('authToken');
+        const jwt = localStorage.getItem('jwt');
+
+        if (!jwt || jwt.trim() === '') {
+            window.location.href = '/login.html';
+        }
 
         async function fetchWithAuth(url) {
             try {
                 const response = await fetch(url, {
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${jwt}`,
                         'Content-Type': 'application/json'
                     }
                 });
