@@ -54,7 +54,7 @@ h2 {
 .topbar .logo {
     font-size: 1.5em;
     text-decoration: none;
-    color: #e0e0e0;
+    margin: auto 0;
 }
 
 .topbar .nav-links {

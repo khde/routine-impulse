@@ -55,7 +55,9 @@
 <body>
     <header class="topbar">
         <nav>
-            <a href="index.html" class="logo">Routine Impulse</a>
+            <a href="index.html" class="logo">
+                <img src="logo.png" alt="Routine Impulse Logo" width=160/>
+            </a>
             <div class="nav-links">
                 <a href="login.html">Login</a>
             </div>
@@ -81,7 +83,7 @@
         const jwt = localStorage.getItem('jwt');
 
         if (!jwt || jwt.trim() === '') {
-            window.location.href = '/login.html';
+            window.location.href = 'login.html';
         }
 
         async function fetchWithAuth(url) {
