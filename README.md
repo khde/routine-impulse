@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="img/logo.png" alt="Logo" width="200"/>
+  <img src="img/routine-impulse-title.png" alt="Logo" width="400"/>
 </p>
 
 ## Overview
