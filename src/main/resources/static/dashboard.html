@@ -39,6 +39,16 @@
             padding: 10px;
         }
 
+        .add-routine-button{
+            cursor: pointer;
+            padding: 10px;
+            margin: 5px 0;
+            background: grey;
+            border-radius: 5px;
+            width: 400px;
+            padding: 10px;
+        }
+
         .routine-item, .task-item {
             cursor: pointer;
             padding: 10px;
@@ -49,6 +59,60 @@
 
         .routine-item:hover, .task-item:hover {
             background: #e0e0e0;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+
+        .popup input, .popup textarea {
+            width: 100%;
+            margin: 10px 0;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .popup-buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .popup-buttons button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .popup-buttons .save {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .popup-buttons .cancel {
+            background: #f44336;
+            color: white;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
         }
     </style>
 </head>
@@ -71,11 +135,23 @@
         </div>
         <div class="selection">
             <h2 id="selectionTitle">Routines</h2>
+            <button class="add-routine-button" id="addRoutineBtn">New Routine</button>
             <div id="selectionList"></div>
         </div>
         <div class="content">
             <h2 id="contentTitle">Daily Programming</h2>
             <div id="contentDescription"></div>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+    <div class="popup" id="routinePopup">
+        <h3>Add Routine</h3>
+        <input type="text" id="routineTitle" placeholder="Title">
+        <textarea id="routineDescription" placeholder="Description" rows="4"></textarea>
+        <div class="popup-buttons">
+            <button class="cancel" id="cancelBtn">Cancel</button>
+            <button class="save" id="saveBtn">Save</button>
         </div>
     </div>
 
@@ -86,12 +162,14 @@
             window.location.href = 'login.html';
         }
 
-        async function fetchWithAuth(url) {
+        async function fetchWithAuth(url, options = {}) {
             try {
                 const response = await fetch(url, {
+                    ...options,
                     headers: {
                         'Authorization': `Bearer ${jwt}`,
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        ...options.headers
                     }
                 });
                 if (!response.ok) {
@@ -155,6 +233,41 @@
                 });
             }
         }
+
+        async function addRoutine(title, description) {
+            const response = await fetchWithAuth('http://localhost:8080/api/routine', {
+                method: 'POST',
+                body: JSON.stringify({ name: title, description, "recurrence": "DAILY" })
+            });
+            if (response) {
+                loadRoutines();
+            }
+        }
+
+        function showPopup() {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('routinePopup').style.display = 'block';
+            document.getElementById('routineTitle').value = '';
+            document.getElementById('routineDescription').value = '';
+        }
+
+        function hidePopup() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('routinePopup').style.display = 'none';
+        }
+
+        document.getElementById('addRoutineBtn').addEventListener('click', showPopup);
+        document.getElementById('cancelBtn').addEventListener('click', hidePopup);
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            const title = document.getElementById('routineTitle').value.trim();
+            const description = document.getElementById('routineDescription').value.trim();
+            if (title) {
+                addRoutine(title, description);
+                hidePopup();
+            } else {
+                alert('Please enter a routine title');
+            }
+        });
 
         document.getElementById('routinesBtn').addEventListener('click', loadRoutines);
         document.getElementById('tasksBtn').addEventListener('click', loadTasks);
