@@ -7,7 +7,10 @@
     <link rel="stylesheet" href="styles.css">
     <style>
         body {
-            background: linear-gradient(135deg, #2a2a6b, #004d57);
+            background: linear-gradient(135deg, #1a1a4a, #00333a);
+            font-family: Arial, sans-serif;
+            color: #d1d1d1;
+            margin: 0;
         }
 
         .container {
@@ -17,7 +20,8 @@
 
         .sidebar {
             width: 200px;
-            background: #2a2a2a;
+            background: #1c1c1c;
+            padding: 10px;
         }
 
         .sidebar button {
@@ -25,30 +29,146 @@
             font-size: 1em;
             display: block;
             width: 90%;
+            padding: 10px;
             border: none;
-            text-align: middle;
+            background: #2a2a2a;
+            color: #d1d1d1;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .sidebar button:hover {
+            background: #3a3a3a;
         }
 
         .selection {
             width: 400px;
-            padding: 10px;
+            padding: 15px;
+            background: #252525;
+            border-right: 1px solid #3a3a3a;
         }
 
         .content {
             width: 100%;
-            padding: 10px;
+            padding: 15px;
+            background: #2f2f2f;
         }
 
-        .routine-item, .task-item {
+        .item {
+            padding: 12px;
+            margin: 8px 0;
+            background: #3a3a3a;
+            border-radius: 6px;
             cursor: pointer;
-            padding: 10px;
-            margin: 5px 0;
-            background: grey;
-            border-radius: 5px;
+            transition: background 0.2s;
         }
 
-        .routine-item:hover, .task-item:hover {
-            background: #e0e0e0;
+        .item:hover {
+            background: #4a4a4a;
+        }
+
+        .action-button {
+            padding: 12px;
+            margin: 8px 0;
+            background: #3a3a3a;
+            color: #d1d1d1;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            font-size: 1em;
+            transition: background 0.2s;
+        }
+
+        .action-button:hover {
+            background: #4a4a4a;
+        }
+
+        .delete-button {
+            padding: 8px 16px;
+            background: #d32f2f;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .delete-button:hover {
+            background: #b71c1c;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #2f2f2f;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            z-index: 1000;
+            width: 300px;
+            color: #d1d1d1;
+        }
+
+        .popup input, .popup textarea {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #4a4a4a;
+            border-radius: 4px;
+            box-sizing: border-box;
+            background: #3a3a3a;
+            color: #d1d1d1;
+        }
+
+        .popup input::placeholder, .popup textarea::placeholder {
+            color: #888;
+        }
+
+        .popup-buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .popup-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .popup-buttons .save {
+            background: #388e3c;
+            color: #fff;
+        }
+
+        .popup-buttons .cancel {
+            background: #d32f2f;
+            color: #fff;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 999;
+        }
+
+        .content-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
     </style>
 </head>
@@ -56,7 +176,7 @@
     <header class="topbar">
         <nav>
             <a href="index.html" class="logo">
-                <img src="logo.png" alt="Routine Impulse Logo" width=160/>
+                <img src="logo.png" alt="Routine Impulse Logo" width="160"/>
             </a>
             <div class="nav-links">
                 <a href="login.html">Login</a>
@@ -70,32 +190,55 @@
             <button class="button" id="tasksBtn">Tasks</button>
         </div>
         <div class="selection">
-            <h2 id="selectionTitle">Routines</h2>
+            <h2 id="selectionTitle">Overview</h2>
+            <button class="action-button" id="addRoutineBtn" style="display: none;">New Routine</button>
+            <button class="action-button" id="addTaskBtn" style="display: none;">New Task</button>
             <div id="selectionList"></div>
         </div>
         <div class="content">
-            <h2 id="contentTitle">Daily Programming</h2>
+            <div class="content-header">
+                <h2 id="contentTitle">Summary</h2>
+                <button class="delete-button" id="deleteBtn" style="display: none;">Delete</button>
+            </div>
             <div id="contentDescription"></div>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+    <div class="popup" id="itemPopup">
+        <h3 id="popupTitle">Add Routine</h3>
+        <input type="text" id="itemTitle" placeholder="Title">
+        <textarea id="itemDescription" placeholder="Description" rows="4"></textarea>
+        <div class="popup-buttons">
+            <button class="cancel" id="cancelBtn">Cancel</button>
+            <button class="save" id="saveBtn">Save</button>
         </div>
     </div>
 
     <script>
         const jwt = localStorage.getItem('jwt');
-
         if (!jwt || jwt.trim() === '') {
             window.location.href = 'login.html';
         }
 
-        async function fetchWithAuth(url) {
+        let selectedItemId = null;
+        let selectedItemType = null;
+
+        async function fetchWithAuth(url, options = {}) {
             try {
                 const response = await fetch(url, {
+                    ...options,
                     headers: {
                         'Authorization': `Bearer ${jwt}`,
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        ...options.headers
                     }
                 });
                 if (!response.ok) {
                     throw new Error('API request failed');
+                }
+                if (response.status === 204) {
+                    return null;
                 }
                 return await response.json();
             } catch (error) {
@@ -109,21 +252,34 @@
             const contentTitle = document.getElementById('contentTitle');
             const contentDescription = document.getElementById('contentDescription');
             const selectionTitle = document.getElementById('selectionTitle');
+            const addRoutineBtn = document.getElementById('addRoutineBtn');
+            const addTaskBtn = document.getElementById('addTaskBtn');
+            const deleteBtn = document.getElementById('deleteBtn');
+            const selection = document.querySelector('.selection');
 
+            selection.style.display = 'block';
             selectionTitle.textContent = 'Routines';
             selectionList.innerHTML = '';
             contentTitle.textContent = 'Select a Routine';
             contentDescription.textContent = '';
+            addRoutineBtn.style.display = 'block';
+            addTaskBtn.style.display = 'none';
+            deleteBtn.style.display = 'none';
+            selectedItemId = null;
+            selectedItemType = null;
 
             const routines = await fetchWithAuth('http://localhost:8080/api/routine');
             if (routines) {
                 routines.forEach(routine => {
                     const routineDiv = document.createElement('div');
-                    routineDiv.className = 'routine-item';
+                    routineDiv.className = 'item';
                     routineDiv.textContent = routine.name;
                     routineDiv.addEventListener('click', () => {
                         contentTitle.textContent = routine.name;
                         contentDescription.textContent = routine.description || 'No description available';
+                        selectedItemId = routine.id;
+                        selectedItemType = 'Routine';
+                        deleteBtn.style.display = 'block';
                     });
                     selectionList.appendChild(routineDiv);
                 });
@@ -135,34 +291,122 @@
             const contentTitle = document.getElementById('contentTitle');
             const contentDescription = document.getElementById('contentDescription');
             const selectionTitle = document.getElementById('selectionTitle');
+            const addRoutineBtn = document.getElementById('addRoutineBtn');
+            const addTaskBtn = document.getElementById('addTaskBtn');
+            const deleteBtn = document.getElementById('deleteBtn');
+            const selection = document.querySelector('.selection');
 
+            selection.style.display = 'block';
             selectionTitle.textContent = 'Tasks';
             selectionList.innerHTML = '';
             contentTitle.textContent = 'Select a Task';
             contentDescription.textContent = '';
+            addRoutineBtn.style.display = 'none';
+            addTaskBtn.style.display = 'block';
+            deleteBtn.style.display = 'none';
+            selectedItemId = null;
+            selectedItemType = null;
 
             const tasks = await fetchWithAuth('http://localhost:8080/api/task');
             if (tasks) {
                 tasks.forEach(task => {
                     const taskDiv = document.createElement('div');
-                    taskDiv.className = 'task-item';
+                    taskDiv.className = 'item';
                     taskDiv.textContent = task.name;
                     taskDiv.addEventListener('click', () => {
                         contentTitle.textContent = task.name;
                         contentDescription.textContent = task.description || 'No description available';
+                        selectedItemId = task.id;
+                        selectedItemType = 'Task';
+                        deleteBtn.style.display = 'block';
                     });
                     selectionList.appendChild(taskDiv);
                 });
             }
         }
 
+        function loadOverview() {
+            const selection = document.querySelector('.selection');
+            const contentTitle = document.getElementById('contentTitle');
+            const contentDescription = document.getElementById('contentDescription');
+            const deleteBtn = document.getElementById('deleteBtn');
+
+            selection.style.display = 'none';
+            contentTitle.textContent = 'Summary';
+            contentDescription.textContent = '';
+            deleteBtn.style.display = 'none';
+            selectedItemId = null;
+            selectedItemType = null;
+        }
+
+        async function addRoutine(title, description) {
+            const response = await fetchWithAuth('http://localhost:8080/api/routine', {
+                method: 'POST',
+                body: JSON.stringify({ name: title, description, recurrence: 'DAILY' })
+            });
+            if (response) {
+                loadRoutines();
+            }
+        }
+
+        async function addTask(title, description) {
+            const response = await fetchWithAuth('http://localhost:8080/api/task', {
+                method: 'POST',
+                body: JSON.stringify({ name: title, description })
+            });
+            if (response) {
+                loadTasks();
+            }
+        }
+
+        async function deleteItem() {
+            if (!selectedItemId || !selectedItemType) return;
+            const endpoint = selectedItemType === 'Routine' 
+                ? `http://localhost:8080/api/routine/${selectedItemId}`
+                : `http://localhost:8080/api/task/${selectedItemId}`;
+            const response = await fetchWithAuth(endpoint, { method: 'DELETE' });
+            if (response !== false) {
+                selectedItemType === 'Routine' ? loadRoutines() : loadTasks();
+            }
+        }
+
+        function showPopup(type) {
+            const popupTitle = document.getElementById('popupTitle');
+            popupTitle.textContent = `Add ${type}`;
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('itemPopup').style.display = 'block';
+            document.getElementById('itemTitle').value = '';
+            document.getElementById('itemDescription').value = '';
+            document.getElementById('saveBtn').onclick = () => {
+                const title = document.getElementById('itemTitle').value.trim();
+                const description = document.getElementById('itemDescription').value.trim();
+                if (title) {
+                    if (type === 'Routine') {
+                        addRoutine(title, description);
+                    } else {
+                        addTask(title, description);
+                    }
+                    hidePopup();
+                } else {
+                    alert('Please enter a title');
+                }
+            };
+        }
+
+        function hidePopup() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('itemPopup').style.display = 'none';
+        }
+
+        document.getElementById('addRoutineBtn').addEventListener('click', () => showPopup('Routine'));
+        document.getElementById('addTaskBtn').addEventListener('click', () => showPopup('Task'));
+        document.getElementById('cancelBtn').addEventListener('click', hidePopup);
+        document.getElementById('deleteBtn').addEventListener('click', deleteItem);
         document.getElementById('routinesBtn').addEventListener('click', loadRoutines);
         document.getElementById('tasksBtn').addEventListener('click', loadTasks);
-        document.getElementById('overviewBtn').addEventListener('click', () => {
-            // TODO
-        });
+        document.getElementById('overviewBtn').addEventListener('click', loadOverview);
 
-        loadRoutines();
+        loadOverview();
     </script>
 </body>
 </html>
