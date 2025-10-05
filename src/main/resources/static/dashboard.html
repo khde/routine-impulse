@@ -8,6 +8,8 @@
     <style>
         body {
             background: linear-gradient(135deg, #2a2a6b, #004d57);
+            font-family: Arial, sans-serif;
+            color: #333;
         }
 
         .container {
@@ -18,6 +20,7 @@
         .sidebar {
             width: 200px;
             background: #2a2a2a;
+            padding: 10px;
         }
 
         .sidebar button {
@@ -25,40 +28,78 @@
             font-size: 1em;
             display: block;
             width: 90%;
+            padding: 10px;
             border: none;
-            text-align: middle;
+            background: #3a3a3a;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .sidebar button:hover {
+            background: #4a4a4a;
         }
 
         .selection {
             width: 400px;
-            padding: 10px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-right: 1px solid #ccc;
         }
 
         .content {
             width: 100%;
-            padding: 10px;
+            padding: 15px;
+            background: #fff;
         }
 
-        .add-routine-button{
-            cursor: pointer;
-            padding: 10px;
-            margin: 5px 0;
-            background: grey;
-            border-radius: 5px;
-            width: 400px;
-            padding: 10px;
-        }
-
-        .routine-item, .task-item {
-            cursor: pointer;
-            padding: 10px;
-            margin: 5px 0;
-            background: grey;
-            border-radius: 5px;
-        }
-
-        .routine-item:hover, .task-item:hover {
+        .item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            margin: 8px 0;
             background: #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .item:hover {
+            background: #d0d0d0;
+        }
+
+        .action-button {
+            padding: 12px;
+            margin: 8px 0;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            font-size: 1em;
+            transition: background 0.2s;
+        }
+
+        .action-button:hover {
+            background: #45a049;
+        }
+
+        .delete-button {
+            padding: 6px 10px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .delete-button:hover {
+            background: #d32f2f;
         }
 
         .popup {
@@ -67,19 +108,21 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: white;
+            background: #fff;
             padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             z-index: 1000;
+            width: 300px;
         }
 
         .popup input, .popup textarea {
             width: 100%;
             margin: 10px 0;
-            padding: 8px;
-            border: 1px solid #ccc;
+            padding: 10px;
+            border: 1px solid #ddd;
             border-radius: 4px;
+            box-sizing: border-box;
         }
 
         .popup-buttons {
@@ -88,10 +131,11 @@
         }
 
         .popup-buttons button {
-            padding: 8px 16px;
+            padding: 10px 20px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 1em;
         }
 
         .popup-buttons .save {
@@ -120,7 +164,7 @@
     <header class="topbar">
         <nav>
             <a href="index.html" class="logo">
-                <img src="logo.png" alt="Routine Impulse Logo" width=160/>
+                <img src="logo.png" alt="Routine Impulse Logo" width="160"/>
             </a>
             <div class="nav-links">
                 <a href="login.html">Login</a>
@@ -135,7 +179,8 @@
         </div>
         <div class="selection">
             <h2 id="selectionTitle">Routines</h2>
-            <button class="add-routine-button" id="addRoutineBtn">New Routine</button>
+            <button class="action-button" id="addRoutineBtn">New Routine</button>
+            <button class="action-button" id="addTaskBtn" style="display: none;">New Task</button>
             <div id="selectionList"></div>
         </div>
         <div class="content">
@@ -146,9 +191,9 @@
 
     <div class="overlay" id="overlay"></div>
     <div class="popup" id="routinePopup">
-        <h3>Add Routine</h3>
-        <input type="text" id="routineTitle" placeholder="Title">
-        <textarea id="routineDescription" placeholder="Description" rows="4"></textarea>
+        <h3 id="popupTitle">Add Routine</h3>
+        <input type="text" id="itemTitle" placeholder="Title">
+        <textarea id="itemDescription" placeholder="Description" rows="4"></textarea>
         <div class="popup-buttons">
             <button class="cancel" id="cancelBtn">Cancel</button>
             <button class="save" id="saveBtn">Save</button>
@@ -157,7 +202,6 @@
 
     <script>
         const jwt = localStorage.getItem('jwt');
-
         if (!jwt || jwt.trim() === '') {
             window.location.href = 'login.html';
         }
@@ -187,18 +231,32 @@
             const contentTitle = document.getElementById('contentTitle');
             const contentDescription = document.getElementById('contentDescription');
             const selectionTitle = document.getElementById('selectionTitle');
+            const addRoutineBtn = document.getElementById('addRoutineBtn');
+            const addTaskBtn = document.getElementById('addTaskBtn');
 
             selectionTitle.textContent = 'Routines';
             selectionList.innerHTML = '';
             contentTitle.textContent = 'Select a Routine';
             contentDescription.textContent = '';
+            addRoutineBtn.style.display = 'block';
+            addTaskBtn.style.display = 'none';
 
             const routines = await fetchWithAuth('http://localhost:8080/api/routine');
             if (routines) {
                 routines.forEach(routine => {
                     const routineDiv = document.createElement('div');
-                    routineDiv.className = 'routine-item';
-                    routineDiv.textContent = routine.name;
+                    routineDiv.className = 'item';
+                    const titleSpan = document.createElement('span');
+                    titleSpan.textContent = routine.name;
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-button';
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteRoutine(routine.id);
+                    });
+                    routineDiv.appendChild(titleSpan);
+                    routineDiv.appendChild(deleteBtn);
                     routineDiv.addEventListener('click', () => {
                         contentTitle.textContent = routine.name;
                         contentDescription.textContent = routine.description || 'No description available';
@@ -213,18 +271,32 @@
             const contentTitle = document.getElementById('contentTitle');
             const contentDescription = document.getElementById('contentDescription');
             const selectionTitle = document.getElementById('selectionTitle');
+            const addRoutineBtn = document.getElementById('addRoutineBtn');
+            const addTaskBtn = document.getElementById('addTaskBtn');
 
             selectionTitle.textContent = 'Tasks';
             selectionList.innerHTML = '';
             contentTitle.textContent = 'Select a Task';
             contentDescription.textContent = '';
+            addRoutineBtn.style.display = 'none';
+            addTaskBtn.style.display = 'block';
 
             const tasks = await fetchWithAuth('http://localhost:8080/api/task');
             if (tasks) {
                 tasks.forEach(task => {
                     const taskDiv = document.createElement('div');
-                    taskDiv.className = 'task-item';
-                    taskDiv.textContent = task.name;
+                    taskDiv.className = 'item';
+                    const titleSpan = document.createElement('span');
+                    titleSpan.textContent = task.name;
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-button';
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteTask(task.id);
+                    });
+                    taskDiv.appendChild(titleSpan);
+                    taskDiv.appendChild(deleteBtn);
                     taskDiv.addEventListener('click', () => {
                         contentTitle.textContent = task.name;
                         contentDescription.textContent = task.description || 'No description available';
@@ -237,18 +309,62 @@
         async function addRoutine(title, description) {
             const response = await fetchWithAuth('http://localhost:8080/api/routine', {
                 method: 'POST',
-                body: JSON.stringify({ name: title, description, "recurrence": "DAILY" })
+                body: JSON.stringify({ name: title, description, recurrence: 'DAILY' })
             });
             if (response) {
                 loadRoutines();
             }
         }
 
-        function showPopup() {
+        async function addTask(title, description) {
+            const response = await fetchWithAuth('http://localhost:8080/api/task', {
+                method: 'POST',
+                body: JSON.stringify({ name: title, description })
+            });
+            if (response) {
+                loadTasks();
+            }
+        }
+
+        async function deleteRoutine(id) {
+            const response = await fetchWithAuth(`http://localhost:8080/api/routine/${id}`, {
+                method: 'DELETE'
+            });
+            if (response) {
+                loadRoutines();
+            }
+        }
+
+        async function deleteTask(id) {
+            const response = await fetchWithAuth(`http://localhost:8080/api/task/${id}`, {
+                method: 'DELETE'
+            });
+            if (response) {
+                loadTasks();
+            }
+        }
+
+        function showPopup(type) {
+            const popupTitle = document.getElementById('popupTitle');
+            popupTitle.textContent = `Add ${type}`;
             document.getElementById('overlay').style.display = 'block';
             document.getElementById('routinePopup').style.display = 'block';
-            document.getElementById('routineTitle').value = '';
-            document.getElementById('routineDescription').value = '';
+            document.getElementById('itemTitle').value = '';
+            document.getElementById('itemDescription').value = '';
+            document.getElementById('saveBtn').onclick = () => {
+                const title = document.getElementById('itemTitle').value.trim();
+                const description = document.getElementById('itemDescription').value.trim();
+                if (title) {
+                    if (type === 'Routine') {
+                        addRoutine(title, description);
+                    } else {
+                        addTask(title, description);
+                    }
+                    hidePopup();
+                } else {
+                    alert('Please enter a title');
+                }
+            };
         }
 
         function hidePopup() {
@@ -256,24 +372,12 @@
             document.getElementById('routinePopup').style.display = 'none';
         }
 
-        document.getElementById('addRoutineBtn').addEventListener('click', showPopup);
+        document.getElementById('addRoutineBtn').addEventListener('click', () => showPopup('Routine'));
+        document.getElementById('addTaskBtn').addEventListener('click', () => showPopup('Task'));
         document.getElementById('cancelBtn').addEventListener('click', hidePopup);
-        document.getElementById('saveBtn').addEventListener('click', () => {
-            const title = document.getElementById('routineTitle').value.trim();
-            const description = document.getElementById('routineDescription').value.trim();
-            if (title) {
-                addRoutine(title, description);
-                hidePopup();
-            } else {
-                alert('Please enter a routine title');
-            }
-        });
-
         document.getElementById('routinesBtn').addEventListener('click', loadRoutines);
         document.getElementById('tasksBtn').addEventListener('click', loadTasks);
-        document.getElementById('overviewBtn').addEventListener('click', () => {
-            // TODO
-        });
+        document.getElementById('overviewBtn').addEventListener('click', () => {});
 
         loadRoutines();
     </script>
