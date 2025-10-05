@@ -190,14 +190,14 @@
             <button class="button" id="tasksBtn">Tasks</button>
         </div>
         <div class="selection">
-            <h2 id="selectionTitle">Routines</h2>
-            <button class="action-button" id="addRoutineBtn">New Routine</button>
+            <h2 id="selectionTitle">Overview</h2>
+            <button class="action-button" id="addRoutineBtn" style="display: none;">New Routine</button>
             <button class="action-button" id="addTaskBtn" style="display: none;">New Task</button>
             <div id="selectionList"></div>
         </div>
         <div class="content">
             <div class="content-header">
-                <h2 id="contentTitle">Daily Programming</h2>
+                <h2 id="contentTitle">Summary</h2>
                 <button class="delete-button" id="deleteBtn" style="display: none;">Delete</button>
             </div>
             <div id="contentDescription"></div>
@@ -237,7 +237,6 @@
                 if (!response.ok) {
                     throw new Error('API request failed');
                 }
-                // Return null for 204 No Content responses (no body to parse)
                 if (response.status === 204) {
                     return null;
                 }
@@ -256,7 +255,9 @@
             const addRoutineBtn = document.getElementById('addRoutineBtn');
             const addTaskBtn = document.getElementById('addTaskBtn');
             const deleteBtn = document.getElementById('deleteBtn');
+            const selection = document.querySelector('.selection');
 
+            selection.style.display = 'block';
             selectionTitle.textContent = 'Routines';
             selectionList.innerHTML = '';
             contentTitle.textContent = 'Select a Routine';
@@ -293,7 +294,9 @@
             const addRoutineBtn = document.getElementById('addRoutineBtn');
             const addTaskBtn = document.getElementById('addTaskBtn');
             const deleteBtn = document.getElementById('deleteBtn');
+            const selection = document.querySelector('.selection');
 
+            selection.style.display = 'block';
             selectionTitle.textContent = 'Tasks';
             selectionList.innerHTML = '';
             contentTitle.textContent = 'Select a Task';
@@ -322,6 +325,20 @@
             }
         }
 
+        function loadOverview() {
+            const selection = document.querySelector('.selection');
+            const contentTitle = document.getElementById('contentTitle');
+            const contentDescription = document.getElementById('contentDescription');
+            const deleteBtn = document.getElementById('deleteBtn');
+
+            selection.style.display = 'none';
+            contentTitle.textContent = 'Summary';
+            contentDescription.textContent = '';
+            deleteBtn.style.display = 'none';
+            selectedItemId = null;
+            selectedItemType = null;
+        }
+
         async function addRoutine(title, description) {
             const response = await fetchWithAuth('http://localhost:8080/api/routine', {
                 method: 'POST',
@@ -348,8 +365,7 @@
                 ? `http://localhost:8080/api/routine/${selectedItemId}`
                 : `http://localhost:8080/api/task/${selectedItemId}`;
             const response = await fetchWithAuth(endpoint, { method: 'DELETE' });
-            // No need to check response for DELETE since fetchWithAuth handles 204
-            if (response !== false) { // Ensure request didn't fail
+            if (response !== false) {
                 selectedItemType === 'Routine' ? loadRoutines() : loadTasks();
             }
         }
@@ -388,9 +404,9 @@
         document.getElementById('deleteBtn').addEventListener('click', deleteItem);
         document.getElementById('routinesBtn').addEventListener('click', loadRoutines);
         document.getElementById('tasksBtn').addEventListener('click', loadTasks);
-        document.getElementById('overviewBtn').addEventListener('click', () => {});
+        document.getElementById('overviewBtn').addEventListener('click', loadOverview);
 
-        loadRoutines();
+        loadOverview();
     </script>
 </body>
 </html>
