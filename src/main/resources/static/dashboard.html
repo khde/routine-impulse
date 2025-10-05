@@ -237,6 +237,10 @@
                 if (!response.ok) {
                     throw new Error('API request failed');
                 }
+                // Return null for 204 No Content responses (no body to parse)
+                if (response.status === 204) {
+                    return null;
+                }
                 return await response.json();
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -344,7 +348,8 @@
                 ? `http://localhost:8080/api/routine/${selectedItemId}`
                 : `http://localhost:8080/api/task/${selectedItemId}`;
             const response = await fetchWithAuth(endpoint, { method: 'DELETE' });
-            if (response) {
+            // No need to check response for DELETE since fetchWithAuth handles 204
+            if (response !== false) { // Ensure request didn't fail
                 selectedItemType === 'Routine' ? loadRoutines() : loadTasks();
             }
         }
