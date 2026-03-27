@@ -38,8 +38,11 @@ public class AuthService {
 
         userService.createUser(user);
 
+        String jwt = issueJwt(user.getUsername());
+
         LoginResponse response = new LoginResponse();
         response.setUsername(user.getUsername());
+        response.setToken(jwt);
 
         return response;
     }
@@ -53,15 +56,19 @@ public class AuthService {
 
         String username = user.getUsername();
 
-        String jwt = Jwt.issuer("routineimpulse")
-            .upn(username)
-            .expiresIn(Duration.ofMinutes(120))
-            .sign();
+        String jwt = issueJwt(username);
 
         LoginResponse response = new LoginResponse();
         response.setUsername(username);
         response.setToken(jwt);
         
         return response;
+    }
+
+    public String issueJwt(String username) {
+        return Jwt.issuer("routineimpulse")
+            .upn(username)
+            .expiresIn(Duration.ofMinutes(120))
+            .sign();
     }
 }
