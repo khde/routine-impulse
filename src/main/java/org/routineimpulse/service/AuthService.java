@@ -5,6 +5,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotAuthorizedException;
+import io.quarkus.elytron.security.common.BcryptUtil;
 
 import org.routineimpulse.dto.LoginRequest;
 import org.routineimpulse.dto.LoginResponse;
@@ -27,7 +28,9 @@ public class AuthService {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword()); // TODO Hashing
+
+        String encryptedPassword = BcryptUtil.bcryptHash(request.getPassword());
+        user.setPassword(encryptedPassword);
 
         userService.createUser(user);
 
@@ -40,7 +43,7 @@ public class AuthService {
     public LoginResponse authenticate(LoginRequest request) {
         User user = userService.getUserByUsername(request.getUsername());
 
-        if (user == null || !user.getPassword().equals(request.getPassword())) {
+        if (user == null || !BcryptUtil.matches(request.getPassword(), user.getPassword())) {
             throw new NotAuthorizedException("Invalid credentials");
         }
 
