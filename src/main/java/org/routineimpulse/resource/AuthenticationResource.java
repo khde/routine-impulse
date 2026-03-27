@@ -7,6 +7,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.POST;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
+import jakarta.validation.Valid;
 
 import org.routineimpulse.dto.LoginRequest;
 import org.routineimpulse.dto.LoginResponse;
@@ -23,7 +24,7 @@ public class AuthenticationResource {
 
     @POST
     @Path("/signup")
-    public Response signup(SignupRequest signupRequest) {
+    public Response signup(@Valid SignupRequest signupRequest) {
         LoginResponse response= authService.register(signupRequest);
         
         return Response.status(Response.Status.CREATED).entity(response).build();
@@ -31,7 +32,7 @@ public class AuthenticationResource {
 
     @POST
     @Path("/login")
-    public Response login(LoginRequest loginRequest) {
+    public Response login(@Valid LoginRequest loginRequest) {
         LoginResponse response = authService.authenticate(loginRequest);
         
         return Response.ok(response).build();
