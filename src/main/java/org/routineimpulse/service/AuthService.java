@@ -1,11 +1,14 @@
 package org.routineimpulse.service;
 
+import java.time.Duration;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotAuthorizedException;
 import io.quarkus.elytron.security.common.BcryptUtil;
+import io.smallrye.jwt.build.Jwt;
 
 import org.routineimpulse.dto.LoginRequest;
 import org.routineimpulse.dto.LoginResponse;
@@ -48,8 +51,16 @@ public class AuthService {
             throw new NotAuthorizedException("Invalid credentials");
         }
 
+        String username = user.getUsername();
+
+        String jwt = Jwt.issuer("routineimpulse")
+            .upn(username)
+            .expiresIn(Duration.ofMinutes(120))
+            .sign();
+
         LoginResponse response = new LoginResponse();
-        response.setUsername(request.getUsername());
+        response.setUsername(username);
+        response.setToken(jwt);
         
         return response;
     }
