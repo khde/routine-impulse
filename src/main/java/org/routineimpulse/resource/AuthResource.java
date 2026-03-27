@@ -17,7 +17,7 @@ import org.routineimpulse.service.AuthService;
 @Path("/api/auth")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class AuthenticationResource {
+public class AuthResource {
 
     @Inject
     AuthService authService;
