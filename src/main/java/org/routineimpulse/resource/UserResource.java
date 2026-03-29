@@ -22,19 +22,14 @@ public class UserResource {
     UserService userService;
 
     @GET
-    @Path("/{username}")
-    public Response getUser(@PathParam("username") String username) {
-        User user = userService.getUserByUsername(username);
+    @Path("/profile")
+    public Response getProfile() {
+        return Response.ok(userService.getCurrentProfile()).build();
+    }
 
-        if (user == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
-        UserResponse response = new UserResponse();
-        response.setUsername(user.getUsername());
-        response.setEmail(user.getEmail());
-        response.setCreationDate(user.getCreationDate());
-        
-        return Response.ok(response).build();
+    @GET
+    @Path("/preferences")
+    public Response getPreferences() {
+        return Response.status(Response.Status.NOT_IMPLEMENTED).build();
     }
 }

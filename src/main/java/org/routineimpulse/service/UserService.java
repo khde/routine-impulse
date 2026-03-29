@@ -6,12 +6,16 @@ import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 
 import org.routineimpulse.model.User;
+import org.routineimpulse.dto.UserProfile;
 
 @ApplicationScoped
 public class UserService {
 
     @Inject
     EntityManager em;
+
+    @Inject
+    AuthService authService;
 
     @Transactional
     public User createUser(User user) {
@@ -26,5 +30,22 @@ public class UserService {
                  .stream()
                  .findFirst()
                  .orElse(null);
+    }
+
+    public UserProfile getCurrentProfile() {
+        String currentUsername = authService.getCurrentUsername();
+
+        User user = getUserByUsername(currentUsername);
+
+        if (user == null) {
+            return null;
+        }
+
+        UserProfile profile = new UserProfile();
+        profile.setUsername(user.getUsername());
+        profile.setEmail(user.getEmail());
+        profile.setCreationDate(user.getCreationDate());
+
+        return profile;
     }
 }
