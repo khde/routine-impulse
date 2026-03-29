@@ -1,5 +1,7 @@
 package org.routineimpulse.model;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -10,6 +12,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
 
 @Entity
 @Table(name = "users")
@@ -23,7 +27,7 @@ public class User {
     @Column(unique = true, nullable = false)
     private String username;
 
-    @Column( nullable = false)
+    @Column(nullable = false)
     private String email;
     
     @Column(nullable = false)
@@ -31,6 +35,9 @@ public class User {
 
     @Column(name = "creation_date", updatable = false)
     private LocalDateTime creationDate;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<Routine> routines = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
