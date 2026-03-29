@@ -8,6 +8,7 @@ import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.persistence.NoResultException;
 
 import org.routineimpulse.dto.RoutineRequest;
 import org.routineimpulse.dto.RoutineResponse;
@@ -54,32 +55,32 @@ public class RoutineService {
     }
 
     public RoutineResponse getRoutineById(Long id, String username) {
-        Routine routine = em.createQuery(
-                "SELECT r FROM Routine r WHERE r.id = :id AND r.user.username = :username", Routine.class)
-                .setParameter("id", id)
-                .setParameter("username", username)
-                .getSingleResult();
+        try {
+            Routine routine = em.createQuery(
+                    "SELECT r FROM Routine r WHERE r.id = :id AND r.user.username = :username", Routine.class)
+                    .setParameter("id", id)
+                    .setParameter("username", username)
+                    .getSingleResult();
 
-        if (routine == null) {
+            return mapToResponse(routine);
+        } catch (NoResultException e) {
             throw new NotFoundException("Routine not found");
         }
-
-        return mapToResponse(routine);
     }
 
     @Transactional
     public void deleteRoutine(Long id, String username) {
-        Routine routine = em.createQuery(
-                "SELECT r FROM Routine r WHERE r.id = :id AND r.user.username = :username", Routine.class)
-                .setParameter("id", id)
-                .setParameter("username", username)
-                .getSingleResult();
+        try {
+            Routine routine = em.createQuery(
+                    "SELECT r FROM Routine r WHERE r.id = :id AND r.user.username = :username", Routine.class)
+                    .setParameter("id", id)
+                    .setParameter("username", username)
+                    .getSingleResult();
 
-        if (routine == null) {
+            em.remove(routine);
+        } catch (NoResultException e) {
             throw new NotFoundException("Routine not found");
         }
-
-        em.remove(routine);
     }
 
     private RoutineResponse mapToResponse(Routine routine) {
