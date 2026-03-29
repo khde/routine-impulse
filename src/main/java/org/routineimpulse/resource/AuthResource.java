@@ -25,7 +25,7 @@ public class AuthResource {
     @POST
     @Path("/signup")
     public Response signup(@Valid SignupRequest signupRequest) {
-        LoginResponse response= authService.register(signupRequest);
+        LoginResponse response = authService.register(signupRequest);
         
         return Response.status(Response.Status.CREATED).entity(response).build();
     }
