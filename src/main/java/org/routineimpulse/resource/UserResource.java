@@ -7,10 +7,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.GET;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.PathParam;
 
-import org.routineimpulse.dto.UserResponse;
-import org.routineimpulse.model.User;
 import org.routineimpulse.service.UserService;
 
 @Path("/api/user")
