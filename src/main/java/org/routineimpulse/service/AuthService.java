@@ -9,6 +9,7 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotAuthorizedException;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.smallrye.jwt.build.Jwt;
+import jakarta.ws.rs.core.SecurityContext;
 
 import org.routineimpulse.dto.LoginRequest;
 import org.routineimpulse.dto.LoginResponse;
@@ -20,6 +21,9 @@ public class AuthService {
 
     @Inject
     UserService userService;
+
+    @Inject
+    SecurityContext securityContext;
 
     @Transactional
     public LoginResponse register(SignupRequest request) {
@@ -70,5 +74,12 @@ public class AuthService {
             .upn(username)
             .expiresIn(Duration.ofMinutes(120))
             .sign();
+    }
+
+    public String getCurrentUsername() {
+        if (securityContext.getUserPrincipal() == null) {
+            throw new NotAuthorizedException("Authentication required");
+        }
+        return securityContext.getUserPrincipal().getName();
     }
 }

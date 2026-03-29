@@ -14,11 +14,11 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.PathParam;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.SecurityContext;
 
 import org.routineimpulse.dto.RoutineRequest;
 import org.routineimpulse.dto.RoutineResponse;
 import org.routineimpulse.service.RoutineService;
+import org.routineimpulse.service.AuthService;
 
 @Path("/api/routine")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -29,12 +29,12 @@ public class RoutineResource {
     RoutineService routineService;
 
     @Context
-    SecurityContext securityContext;
+    AuthService authService;
 
     @POST
     public Response createRoutine(@Valid RoutineRequest request) {
-        String currentUsername = securityContext.getUserPrincipal().getName();
-        RoutineResponse response = routineService.createRoutine(request, currentUsername);
+        String username = authService.getCurrentUsername();
+        RoutineResponse response = routineService.createRoutine(request, username);
 
         return Response.status(Response.Status.CREATED).entity(response).build();
     }
@@ -42,8 +42,8 @@ public class RoutineResource {
     @GET
     @Path("/all")
     public Response getAllRoutinesForUser() {
-        String currentUsername = securityContext.getUserPrincipal().getName();
-        List<RoutineResponse> routines = routineService.getAllRoutinesForUser(currentUsername);
+        String username = authService.getCurrentUsername();
+        List<RoutineResponse> routines = routineService.getAllRoutinesForUser(username);
 
         return Response.ok(routines).build();
     }
@@ -51,8 +51,8 @@ public class RoutineResource {
     @GET
     @Path("/{id}")
     public Response getRoutineById(@PathParam("id") Long id) {
-        String currentUsername = securityContext.getUserPrincipal().getName();
-        RoutineResponse response = routineService.getRoutineById(id, currentUsername);
+        String username = authService.getCurrentUsername();
+        RoutineResponse response = routineService.getRoutineById(id, username);
 
         return Response.ok(response).build();
     }
@@ -60,8 +60,8 @@ public class RoutineResource {
     @DELETE
     @Path("/{id}")
     public Response deleteRoutine(@PathParam("id") Long id) {
-        String currentUsername = securityContext.getUserPrincipal().getName();
-        routineService.deleteRoutine(id, currentUsername);
+        String username = authService.getCurrentUsername();
+        routineService.deleteRoutine(id, username);
 
         return Response.noContent().build();
     }
