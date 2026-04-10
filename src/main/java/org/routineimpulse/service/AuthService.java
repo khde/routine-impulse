@@ -10,6 +10,7 @@ import jakarta.ws.rs.NotAuthorizedException;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.ws.rs.core.SecurityContext;
+import io.quarkus.logging.Log;
 
 import org.routineimpulse.dto.LoginRequest;
 import org.routineimpulse.dto.LoginResponse;
@@ -28,8 +29,10 @@ public class AuthService {
     @Transactional
     public LoginResponse register(SignupRequest request) {
         String normalizedUsername = request.getUsername().toLowerCase().trim();
+        Log.infof("New Registration: %s", normalizedUsername);
 
         if (userService.getUserByUsername(normalizedUsername) != null) {
+            Log.warnf("Registration failed: username already exists: %s", normalizedUsername);
             throw new BadRequestException("Username already in use");
         }
 
@@ -41,6 +44,7 @@ public class AuthService {
         user.setPassword(encryptedPassword);
 
         userService.createUser(user);
+        Log.infof("New user registered: %s", normalizedUsername);
 
         String jwt = issueJwt(user.getUsername());
 
@@ -55,10 +59,12 @@ public class AuthService {
         User user = userService.getUserByUsername(request.getUsername());
 
         if (user == null || !BcryptUtil.matches(request.getPassword(), user.getPassword())) {
+            Log.warnf("Authentication failed: invalid credentials for user: %s", request.getUsername());
             throw new NotAuthorizedException("Invalid credentials");
         }
 
         String username = user.getUsername();
+        Log.infof("User authenticated: %s", username);
 
         String jwt = issueJwt(username);
 
@@ -78,6 +84,7 @@ public class AuthService {
 
     public String getCurrentUsername() {
         if (securityContext.getUserPrincipal() == null) {
+            Log.warn("Authentication required but not provided");
             throw new NotAuthorizedException("Authentication required");
         }
         return securityContext.getUserPrincipal().getName();
