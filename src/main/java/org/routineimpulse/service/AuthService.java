@@ -39,6 +39,7 @@ public class AuthService {
         User user = new User();
         user.setUsername(normalizedUsername);
         user.setEmail(request.getEmail());
+        user.setLocked(false);
 
         String encryptedPassword = BcryptUtil.bcryptHash(request.getPassword());
         user.setPassword(encryptedPassword);
@@ -61,6 +62,11 @@ public class AuthService {
         if (user == null || !BcryptUtil.matches(request.getPassword(), user.getPassword())) {
             Log.warnf("Authentication failed: invalid credentials for user: %s", request.getUsername());
             throw new NotAuthorizedException("Invalid credentials");
+        }
+
+        if (user.isLocked()) {
+            Log.warnf("Authentication failed: user account is locked: %s", request.getUsername());
+            throw new NotAuthorizedException("Account is locked");
         }
 
         String username = user.getUsername();
@@ -87,6 +93,15 @@ public class AuthService {
             Log.warn("Authentication required but not provided");
             throw new NotAuthorizedException("Authentication required");
         }
-        return securityContext.getUserPrincipal().getName();
+        
+        String username = securityContext.getUserPrincipal().getName();
+        User user = userService.getUserByUsername(username);
+        
+        if (user != null && user.isLocked()) {
+            Log.warnf("Access denied: user account is locked: %s", username);
+            throw new NotAuthorizedException("Account is locked");
+        }
+        
+        return username;
     }
 }

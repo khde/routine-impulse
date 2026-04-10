@@ -36,6 +36,9 @@ public class User {
     @Column(name = "creation_date", updatable = false)
     private LocalDateTime creationDate;
 
+    @Column(nullable = false)
+    private boolean locked = false;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     public List<Routine> routines = new ArrayList<>();
 
@@ -82,5 +85,13 @@ public class User {
 
     public void setCreationDate(LocalDateTime creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
     }
 }
