@@ -8,6 +8,8 @@ import jakarta.ws.rs.POST;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import jakarta.validation.Valid;
+import jakarta.ws.rs.CookieParam;
+import jakarta.ws.rs.core.NewCookie;
 
 import org.routineimpulse.dto.LoginRequest;
 import org.routineimpulse.dto.LoginResponse;
@@ -19,6 +21,9 @@ import org.routineimpulse.service.AuthService;
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthResource {
 
+    private static final String REFRESH_COOKIE_NAME = "refresh_token";
+    private static final String ACCESS_COOKIE_NAME = "access_token";
+
     @Inject
     AuthService authService;
 
@@ -26,15 +31,63 @@ public class AuthResource {
     @Path("/signup")
     public Response signup(@Valid SignupRequest signupRequest) {
         LoginResponse response = authService.register(signupRequest);
-        
-        return Response.status(Response.Status.CREATED).entity(response).build();
+
+        String refreshToken = authService.createRefreshToken(response.getUsername());
+        String accessToken = authService.createAccessToken(refreshToken);
+
+        NewCookie accessCookie = buildAccessCookie(accessToken);
+        NewCookie refreshCookie = buildRefreshCookie(refreshToken);
+
+        return Response.status(Response.Status.CREATED)
+            .cookie(accessCookie, refreshCookie)
+            .entity(response)
+            .build();
     }
 
     @POST
     @Path("/login")
     public Response login(@Valid LoginRequest loginRequest) {
         LoginResponse response = authService.authenticate(loginRequest);
+
+        String refreshToken = authService.createRefreshToken(response.getUsername());
+        String accessToken = authService.createAccessToken(refreshToken);
+
+        NewCookie accessCookie = buildAccessCookie(accessToken);
+        NewCookie refreshCookie = buildRefreshCookie(refreshToken);
         
-        return Response.ok(response).build();
+        return Response.ok(response)
+            .cookie(accessCookie, refreshCookie)
+            .build();
+    }
+
+    @POST
+    @Path("/refresh")
+    public Response refresh(@CookieParam(REFRESH_COOKIE_NAME) String refreshToken) {
+        String newAccessToken = authService.createAccessToken(refreshToken);
+        NewCookie accessCookie = buildAccessCookie(newAccessToken);
+
+        return Response.noContent()
+            .cookie(accessCookie)
+            .build();
+    }
+
+    private NewCookie buildAccessCookie(String token) {
+        return new NewCookie.Builder(ACCESS_COOKIE_NAME)
+            .value(token)
+            .path("/api")
+            .maxAge(15 * 60)
+            .secure(false)
+            .httpOnly(true)
+            .build();
+    }
+
+    private NewCookie buildRefreshCookie(String token) {
+        return new NewCookie.Builder(REFRESH_COOKIE_NAME)
+            .value(token)
+            .path("/api/auth/refresh")
+            .maxAge(7 * 24 * 60 * 60)
+            .secure(false)
+            .httpOnly(true)
+            .build();
     }
 }

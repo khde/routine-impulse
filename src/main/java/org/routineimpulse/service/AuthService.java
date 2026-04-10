@@ -1,9 +1,14 @@
 package org.routineimpulse.service;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.util.Base64;
+import java.util.Optional;
+import java.security.SecureRandom;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotAuthorizedException;
@@ -14,17 +19,24 @@ import io.quarkus.logging.Log;
 
 import org.routineimpulse.dto.LoginRequest;
 import org.routineimpulse.dto.LoginResponse;
+import org.routineimpulse.model.RefreshToken;
 import org.routineimpulse.dto.SignupRequest;
 import org.routineimpulse.model.User;
 
 @ApplicationScoped
 public class AuthService {
 
+    private static final String ACCESS_TOKEN_TYPE = "access";
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     @Inject
     UserService userService;
 
     @Inject
     SecurityContext securityContext;
+
+    @Inject
+    EntityManager em;
 
     @Transactional
     public LoginResponse register(SignupRequest request) {
@@ -47,11 +59,8 @@ public class AuthService {
         userService.createUser(user);
         Log.infof("New user registered: %s", normalizedUsername);
 
-        String jwt = issueJwt(user.getUsername());
-
         LoginResponse response = new LoginResponse();
         response.setUsername(user.getUsername());
-        response.setToken(jwt);
 
         return response;
     }
@@ -72,20 +81,73 @@ public class AuthService {
         String username = user.getUsername();
         Log.infof("User authenticated: %s", username);
 
-        String jwt = issueJwt(username);
-
         LoginResponse response = new LoginResponse();
         response.setUsername(username);
-        response.setToken(jwt);
-        
+
         return response;
     }
 
-    public String issueJwt(String username) {
+    @Transactional
+    public String createRefreshToken(String username) {
+        User user = userService.getUserByUsername(username);
+        if (user == null || user.isLocked()) {
+            throw new NotAuthorizedException("Invalid credentials");
+        }
+
+        em.createQuery("UPDATE RefreshToken r SET r.revoked = true WHERE r.userId = :userId")
+            .setParameter("userId", user.getId())
+            .executeUpdate();
+
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setUserId(user.getId());
+        refreshToken.setToken(generateRefreshTokenValue());
+        refreshToken.setExpiresAt(Instant.now().plus(Duration.ofDays(7)));
+        refreshToken.setRevoked(false);
+        em.persist(refreshToken);
+
+        return refreshToken.getToken();
+    }
+
+    @Transactional
+    public String createAccessToken(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new NotAuthorizedException("Invalid refresh token");
+        }
+
+        Optional<RefreshToken> storedTokenOptional = em.createNamedQuery("RefreshToken.findByToken", RefreshToken.class)
+            .setParameter("token", refreshToken)
+            .getResultStream()
+            .findFirst();
+
+        if (storedTokenOptional.isEmpty()) {
+            Log.warn("Refresh failed: refresh token is invalid");
+            throw new NotAuthorizedException("Invalid refresh token");
+        }
+
+        RefreshToken storedToken = storedTokenOptional.get();
+        if (storedToken.isRevoked() || storedToken.isExpired()) {
+            Log.warn("Refresh failed: refresh token is invalid, revoked or expired");
+            throw new NotAuthorizedException("Invalid refresh token");
+        }
+
+        User user = em.find(User.class, storedToken.getUserId());
+        if (user == null || user.isLocked()) {
+            Log.warn("Refresh failed: user not found or locked");
+            storedToken.setRevoked(true);
+            throw new NotAuthorizedException("Invalid refresh token");
+        }
+
         return Jwt.issuer("routineimpulse")
-            .upn(username)
-            .expiresIn(Duration.ofMinutes(120))
+            .upn(user.getUsername())
+            .claim("token_type", ACCESS_TOKEN_TYPE)
+            .expiresIn(Duration.ofMinutes(15))
             .sign();
+}
+
+    private String generateRefreshTokenValue() {
+        byte[] randomBytes = new byte[64];
+        SECURE_RANDOM.nextBytes(randomBytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
     }
 
     public String getCurrentUsername() {
