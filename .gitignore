@@ -44,8 +44,8 @@ nb-configuration.xml
 # TLS Certificates
 .certs/
 
-.env
 TODO.txt
 
-src/main/resources/privateKey.pem
-src/main/resources/publicKey.pem
+# Keys
+backend/src/main/resources/privateKey.pem
+backend/src/main/resources/publicKey.pem
