@@ -5,6 +5,9 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.Optional;
 import java.security.SecureRandom;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -99,14 +102,16 @@ public class AuthService {
             .setParameter("userId", user.getId())
             .executeUpdate();
 
+        String refreshTokenValue = generateRefreshTokenValue();
+
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setUserId(user.getId());
-        refreshToken.setToken(generateRefreshTokenValue());
+        refreshToken.setToken(hashRefreshToken(refreshTokenValue));
         refreshToken.setExpiresAt(Instant.now().plus(Duration.ofDays(7)));
         refreshToken.setRevoked(false);
         em.persist(refreshToken);
 
-        return refreshToken.getToken();
+        return refreshTokenValue;
     }
 
     @Transactional
@@ -115,8 +120,10 @@ public class AuthService {
             throw new NotAuthorizedException("Invalid refresh token");
         }
 
+        String refreshTokenHash = hashRefreshToken(refreshToken);
+
         Optional<RefreshToken> storedTokenOptional = em.createNamedQuery("RefreshToken.findByToken", RefreshToken.class)
-            .setParameter("token", refreshToken)
+            .setParameter("token", refreshTokenHash)
             .getResultStream()
             .findFirst();
 
@@ -151,8 +158,10 @@ public class AuthService {
             return;
         }
 
+        String refreshTokenHash = hashRefreshToken(refreshToken);
+
         em.createNamedQuery("RefreshToken.findByToken", RefreshToken.class)
-            .setParameter("token", refreshToken)
+            .setParameter("token", refreshTokenHash)
             .getResultStream()
             .findFirst()
             .ifPresent(token -> {
@@ -165,6 +174,16 @@ public class AuthService {
         byte[] randomBytes = new byte[64];
         SECURE_RANDOM.nextBytes(randomBytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
+    }
+
+    private String hashRefreshToken(String refreshToken) {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+            byte[] hashed = messageDigest.digest(refreshToken.getBytes(StandardCharsets.UTF_8));
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(hashed);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Refresh token hashing algorithm is not available", e);
+        }
     }
 
     public String getCurrentUsername() {
