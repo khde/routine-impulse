@@ -97,7 +97,7 @@ public class AuthResource {
     private NewCookie buildRefreshCookie(String token) {
         return new NewCookie.Builder(REFRESH_COOKIE_NAME)
             .value(token)
-            .path("/api/auth/refresh")
+            .path("/api/auth")
             .maxAge(7 * 24 * 60 * 60)
             .secure(false)
             .httpOnly(true)
@@ -117,7 +117,7 @@ public class AuthResource {
     private NewCookie clearRefreshCookie() {
         return new NewCookie.Builder(REFRESH_COOKIE_NAME)
             .value("")
-            .path("/api/auth/refresh")
+            .path("/api/auth")
             .maxAge(0)
             .secure(false)
             .httpOnly(true)

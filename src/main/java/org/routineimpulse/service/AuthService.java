@@ -66,15 +66,16 @@ public class AuthService {
     }
 
     public LoginResponse authenticate(LoginRequest request) {
-        User user = userService.getUserByUsername(request.getUsername());
+        String normalizedUsername = request.getUsername().toLowerCase().trim();
+        User user = userService.getUserByUsername(normalizedUsername);
 
         if (user == null || !BcryptUtil.matches(request.getPassword(), user.getPassword())) {
-            Log.warnf("Authentication failed: invalid credentials for user: %s", request.getUsername());
+            Log.warnf("Authentication failed: invalid credentials for user: %s", normalizedUsername);
             throw new NotAuthorizedException("Invalid credentials");
         }
 
         if (user.isLocked()) {
-            Log.warnf("Authentication failed: user account is locked: %s", request.getUsername());
+            Log.warnf("Authentication failed: user account is locked: %s", normalizedUsername);
             throw new NotAuthorizedException("Account is locked");
         }
 
