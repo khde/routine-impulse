@@ -142,7 +142,23 @@ public class AuthService {
             .claim("token_type", ACCESS_TOKEN_TYPE)
             .expiresIn(Duration.ofMinutes(15))
             .sign();
-}
+    }
+
+    @Transactional
+    public void logout(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            return;
+        }
+
+        em.createNamedQuery("RefreshToken.findByToken", RefreshToken.class)
+            .setParameter("token", refreshToken)
+            .getResultStream()
+            .findFirst()
+            .ifPresent(token -> {
+                token.setRevoked(true);
+                Log.infof("Refresh token revoked during logout for userId=%s", token.getUserId());
+            });
+    }
 
     private String generateRefreshTokenValue() {
         byte[] randomBytes = new byte[64];

@@ -54,8 +54,8 @@ public class AuthResource {
 
         NewCookie accessCookie = buildAccessCookie(accessToken);
         NewCookie refreshCookie = buildRefreshCookie(refreshToken);
-        
-        return Response.ok(response)
+
+        return Response.noContent()
             .cookie(accessCookie, refreshCookie)
             .build();
     }
@@ -68,6 +68,19 @@ public class AuthResource {
 
         return Response.noContent()
             .cookie(accessCookie)
+            .build();
+    }
+
+    @POST
+    @Path("/logout")
+    public Response logout(@CookieParam(REFRESH_COOKIE_NAME) String refreshToken) {
+        authService.logout(refreshToken);
+
+        NewCookie accessCookie = clearAccessCookie();
+        NewCookie refreshCookie = clearRefreshCookie();
+
+        return Response.noContent()
+            .cookie(accessCookie, refreshCookie)
             .build();
     }
 
@@ -86,6 +99,26 @@ public class AuthResource {
             .value(token)
             .path("/api/auth/refresh")
             .maxAge(7 * 24 * 60 * 60)
+            .secure(false)
+            .httpOnly(true)
+            .build();
+    }
+
+    private NewCookie clearAccessCookie() {
+        return new NewCookie.Builder(ACCESS_COOKIE_NAME)
+            .value("")
+            .path("/api")
+            .maxAge(0)
+            .secure(false)
+            .httpOnly(true)
+            .build();
+    }
+
+    private NewCookie clearRefreshCookie() {
+        return new NewCookie.Builder(REFRESH_COOKIE_NAME)
+            .value("")
+            .path("/api/auth/refresh")
+            .maxAge(0)
             .secure(false)
             .httpOnly(true)
             .build();
