@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Optional;
+import java.util.Set;
 import java.security.SecureRandom;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -29,7 +30,7 @@ import org.routineimpulse.model.User;
 @ApplicationScoped
 public class AuthService {
 
-    private static final String ACCESS_TOKEN_TYPE = "access";
+    private static final String DEFAULT_USER_ROLE = "user";
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     @Inject
@@ -147,7 +148,7 @@ public class AuthService {
 
         return Jwt.issuer("routineimpulse")
             .upn(user.getUsername())
-            .claim("token_type", ACCESS_TOKEN_TYPE)
+            .groups(Set.of(DEFAULT_USER_ROLE))
             .expiresIn(Duration.ofMinutes(15))
             .sign();
     }
