@@ -16,6 +16,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotAuthorizedException;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.ws.rs.core.SecurityContext;
@@ -41,6 +42,9 @@ public class AuthService {
 
     @Inject
     EntityManager em;
+
+    @ConfigProperty(name = "mp.jwt.verify.issuer")
+    String jwtIssuer;
 
     @Transactional
     public LoginResponse register(SignupRequest request) {
@@ -146,7 +150,7 @@ public class AuthService {
             throw new NotAuthorizedException("Invalid refresh token");
         }
 
-        return Jwt.issuer("routineimpulse")
+        return Jwt.issuer(jwtIssuer)
             .upn(user.getUsername())
             .groups(Set.of(DEFAULT_USER_ROLE))
             .expiresIn(Duration.ofMinutes(15))

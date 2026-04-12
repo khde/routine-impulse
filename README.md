@@ -17,12 +17,19 @@ docker build -t routine-impulse .
 
 1. Copy the environment template:
 ```bash
-cp env.template .env
+cp .env.template .env
 ```
 
-2. Update `.env`
+2. Generate JWT keys:
+```bash
+mkdir -p .secrets/jwt
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out .secrets/jwt/privateKey.pem
+openssl rsa -pubout -in .secrets/jwt/privateKey.pem -out .secrets/jwt/publicKey.pem
+```
 
-3. Start the services:
+3. Update `.env` if needed (DB/JWT issuer and key file paths).
+
+4. Start the services:
 ```bash
 docker compose up
 ```
