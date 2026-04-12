@@ -44,6 +44,12 @@ nb-configuration.xml
 # TLS Certificates
 .certs/
 
+# React, Vite 
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.DS_Store
+
 TODO.txt
 
 # Keys
