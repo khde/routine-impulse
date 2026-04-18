@@ -25,6 +25,7 @@ import io.quarkus.logging.Log;
 import org.routineimpulse.dto.LoginRequest;
 import org.routineimpulse.dto.LoginResponse;
 import org.routineimpulse.model.RefreshToken;
+import org.routineimpulse.dto.ChangePasswordRequest;
 import org.routineimpulse.dto.SignupRequest;
 import org.routineimpulse.model.User;
 
@@ -173,6 +174,33 @@ public class AuthService {
                 token.setRevoked(true);
                 Log.infof("Refresh token revoked during logout for userId=%s", token.getUserId());
             });
+    }
+
+    @Transactional
+    public void changePassword(ChangePasswordRequest request) {
+        String username = getCurrentUsername();
+        User user = userService.getUserByUsername(username);
+
+        if (user == null) {
+            throw new NotAuthorizedException("Authentication required");
+        }
+
+        if (!BcryptUtil.matches(request.getCurrentPassword(), user.getPassword())) {
+            Log.warnf("Password change failed: invalid current password for user: %s", username);
+            throw new NotAuthorizedException("Current password is incorrect");
+        }
+
+        if (BcryptUtil.matches(request.getNewPassword(), user.getPassword())) {
+            throw new BadRequestException("New password must be different from current password");
+        }
+
+        user.setPassword(BcryptUtil.bcryptHash(request.getNewPassword()));
+
+        em.createQuery("UPDATE RefreshToken r SET r.revoked = true WHERE r.userId = :userId")
+            .setParameter("userId", user.getId())
+            .executeUpdate();
+
+        Log.infof("Password reset completed for user: %s", username);
     }
 
     private String generateRefreshTokenValue() {

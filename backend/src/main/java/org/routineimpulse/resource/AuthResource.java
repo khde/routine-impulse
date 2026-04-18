@@ -10,9 +10,11 @@ import jakarta.ws.rs.core.Response;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.core.NewCookie;
+import io.quarkus.security.Authenticated;
 
 import org.routineimpulse.dto.LoginRequest;
 import org.routineimpulse.dto.LoginResponse;
+import org.routineimpulse.dto.ChangePasswordRequest;
 import org.routineimpulse.dto.SignupRequest;
 import org.routineimpulse.service.AuthService;
 
@@ -82,6 +84,15 @@ public class AuthResource {
         return Response.noContent()
             .cookie(accessCookie, refreshCookie)
             .build();
+    }
+
+    @POST
+    @Path("/change-password")
+    @Authenticated
+    public Response changePassword(@Valid ChangePasswordRequest changePasswordRequest) {
+        authService.changePassword(changePasswordRequest);
+
+        return Response.noContent().build();
     }
 
     private NewCookie buildAccessCookie(String token) {
