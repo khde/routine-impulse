@@ -203,6 +203,24 @@ public class AuthService {
         Log.infof("Password reset completed for user: %s", username);
     }
 
+    @Transactional
+    public void deleteAccount() {
+        String username = getCurrentUsername();
+        User user = userService.getUserByUsername(username);
+
+        if (user == null) {
+            throw new NotAuthorizedException("Authentication required");
+        }
+
+        em.createQuery("DELETE FROM RefreshToken r WHERE r.userId = :userId")
+            .setParameter("userId", user.getId())
+            .executeUpdate();
+
+        em.remove(user);
+
+        Log.infof("User account deleted: %s", username);
+    }
+
     private String generateRefreshTokenValue() {
         byte[] randomBytes = new byte[64];
         SECURE_RANDOM.nextBytes(randomBytes);

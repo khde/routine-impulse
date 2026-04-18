@@ -5,6 +5,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.DELETE;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import jakarta.validation.Valid;
@@ -93,6 +94,20 @@ public class AuthResource {
         authService.changePassword(changePasswordRequest);
 
         return Response.noContent().build();
+    }
+
+    @DELETE
+    @Path("/delete-account")
+    @Authenticated
+    public Response deleteAccount() {
+        authService.deleteAccount();
+
+        NewCookie accessCookie = clearAccessCookie();
+        NewCookie refreshCookie = clearRefreshCookie();
+
+        return Response.noContent()
+            .cookie(accessCookie, refreshCookie)
+            .build();
     }
 
     private NewCookie buildAccessCookie(String token) {

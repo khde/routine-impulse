@@ -42,6 +42,9 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     public List<Routine> routines = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<Task> tasks = new ArrayList<>();
+
     @PrePersist
     protected void onCreate() {
         this.creationDate = LocalDateTime.now();
