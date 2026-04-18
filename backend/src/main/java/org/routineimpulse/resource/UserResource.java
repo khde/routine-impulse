@@ -10,7 +10,7 @@ import jakarta.ws.rs.core.Response;
 
 import org.routineimpulse.service.UserService;
 
-@Path("/api/user")
+@Path("/user")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class UserResource {

@@ -20,7 +20,7 @@ import org.routineimpulse.dto.TaskResponse;
 import org.routineimpulse.service.TaskService;
 import org.routineimpulse.service.AuthService;
 
-@Path("/api/task")
+@Path("/task")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class TaskResource {

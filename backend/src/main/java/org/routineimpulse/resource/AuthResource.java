@@ -16,7 +16,7 @@ import org.routineimpulse.dto.LoginResponse;
 import org.routineimpulse.dto.SignupRequest;
 import org.routineimpulse.service.AuthService;
 
-@Path("/api/auth")
+@Path("/auth")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthResource {
