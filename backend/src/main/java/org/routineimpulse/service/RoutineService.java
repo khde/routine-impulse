@@ -12,6 +12,7 @@ import jakarta.ws.rs.core.Response;
 
 import org.routineimpulse.dto.RoutineRequest;
 import org.routineimpulse.dto.RoutineResponse;
+import org.routineimpulse.dto.RoutineUpdateRequest;
 import org.routineimpulse.exception.RoutineException;
 import org.routineimpulse.model.Routine;
 import org.routineimpulse.model.RoutineSchedule;
@@ -64,32 +65,42 @@ public class RoutineService {
     }
 
     public RoutineResponse getRoutineById(Long id, String username) {
-        try {
-            Routine routine = em.createQuery(
-                    "SELECT r FROM Routine r WHERE r.id = :id AND r.user.username = :username", Routine.class)
-                    .setParameter("id", id)
-                    .setParameter("username", username)
-                    .getSingleResult();
+        Routine routine = findRoutineByIdAndUsername(id, username);
+        return mapToResponse(routine);
+    }
 
-            return mapToResponse(routine);
-        } catch (NoResultException e) {
-            throw new RoutineException(Response.Status.NOT_FOUND, "ROUTINE_NOT_FOUND", "Routine not found");
+    @Transactional
+    public RoutineResponse updateRoutine(Long id, RoutineUpdateRequest request, String username) {
+        Routine routine = findRoutineByIdAndUsername(id, username);
+
+        if (request.getName() != null) {
+            routine.setName(request.getName().trim());
         }
+
+        if (request.getDescription() != null) {
+            routine.setDescription(request.getDescription().trim());
+        }
+
+        if (request.getSelectedDays() != null) {
+            RoutineSchedule schedule = routine.getSchedule();
+            if (schedule == null) {
+                schedule = new RoutineSchedule();
+                routine.setSchedule(schedule);
+            }
+
+            schedule.clearDays();
+            for (var day : request.getSelectedDays()) {
+                schedule.addDay(day);
+            }
+        }
+
+        return mapToResponse(routine);
     }
 
     @Transactional
     public void deleteRoutine(Long id, String username) {
-        try {
-            Routine routine = em.createQuery(
-                    "SELECT r FROM Routine r WHERE r.id = :id AND r.user.username = :username", Routine.class)
-                    .setParameter("id", id)
-                    .setParameter("username", username)
-                    .getSingleResult();
-
-            em.remove(routine);
-        } catch (NoResultException e) {
-            throw new RoutineException(Response.Status.NOT_FOUND, "ROUTINE_NOT_FOUND", "Routine not found");
-        }
+        Routine routine = findRoutineByIdAndUsername(id, username);
+        em.remove(routine);
     }
 
     private RoutineResponse mapToResponse(Routine routine) {
@@ -104,5 +115,17 @@ public class RoutineService {
         }
 
         return response;
+    }
+
+    private Routine findRoutineByIdAndUsername(Long id, String username) {
+        try {
+            return em.createQuery(
+                    "SELECT r FROM Routine r WHERE r.id = :id AND r.user.username = :username", Routine.class)
+                    .setParameter("id", id)
+                    .setParameter("username", username)
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            throw new RoutineException(Response.Status.NOT_FOUND, "ROUTINE_NOT_FOUND", "Routine not found");
+        }
     }
 }

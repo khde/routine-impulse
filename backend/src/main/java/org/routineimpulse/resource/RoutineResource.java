@@ -9,6 +9,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.PATCH;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.PathParam;
@@ -17,6 +18,7 @@ import jakarta.ws.rs.core.Context;
 
 import org.routineimpulse.dto.RoutineRequest;
 import org.routineimpulse.dto.RoutineResponse;
+import org.routineimpulse.dto.RoutineUpdateRequest;
 import org.routineimpulse.service.RoutineService;
 import org.routineimpulse.service.AuthService;
 
@@ -53,6 +55,15 @@ public class RoutineResource {
     public Response getRoutineById(@PathParam("id") Long id) {
         String username = authService.getCurrentUsername();
         RoutineResponse response = routineService.getRoutineById(id, username);
+
+        return Response.ok(response).build();
+    }
+
+    @PATCH
+    @Path("/{id}")
+    public Response updateRoutine(@PathParam("id") Long id, @Valid RoutineUpdateRequest request) {
+        String username = authService.getCurrentUsername();
+        RoutineResponse response = routineService.updateRoutine(id, request, username);
 
         return Response.ok(response).build();
     }
