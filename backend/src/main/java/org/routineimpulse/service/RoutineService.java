@@ -7,12 +7,12 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.NotAuthorizedException;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.persistence.NoResultException;
+import jakarta.ws.rs.core.Response;
 
 import org.routineimpulse.dto.RoutineRequest;
 import org.routineimpulse.dto.RoutineResponse;
+import org.routineimpulse.exception.RoutineException;
 import org.routineimpulse.model.Routine;
 import org.routineimpulse.model.RoutineSchedule;
 import org.routineimpulse.model.User;
@@ -30,7 +30,7 @@ public class RoutineService {
     public RoutineResponse createRoutine(RoutineRequest request, String username) {
         User user = userService.getUserByUsername(username);
         if (user == null) {
-            throw new NotAuthorizedException("Authentication required");
+            throw new RoutineException(Response.Status.UNAUTHORIZED, "AUTHENTICATION_REQUIRED", "Authentication required");
         }
 
         Routine routine = new Routine();
@@ -73,7 +73,7 @@ public class RoutineService {
 
             return mapToResponse(routine);
         } catch (NoResultException e) {
-            throw new NotFoundException("Routine not found");
+            throw new RoutineException(Response.Status.NOT_FOUND, "ROUTINE_NOT_FOUND", "Routine not found");
         }
     }
 
@@ -88,7 +88,7 @@ public class RoutineService {
 
             em.remove(routine);
         } catch (NoResultException e) {
-            throw new NotFoundException("Routine not found");
+            throw new RoutineException(Response.Status.NOT_FOUND, "ROUTINE_NOT_FOUND", "Routine not found");
         }
     }
 

@@ -14,8 +14,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.smallrye.jwt.build.Jwt;
@@ -24,6 +23,7 @@ import io.quarkus.logging.Log;
 
 import org.routineimpulse.dto.LoginRequest;
 import org.routineimpulse.dto.LoginResponse;
+import org.routineimpulse.exception.AuthException;
 import org.routineimpulse.model.RefreshToken;
 import org.routineimpulse.dto.ChangePasswordRequest;
 import org.routineimpulse.dto.SignupRequest;
@@ -54,7 +54,7 @@ public class AuthService {
 
         if (userService.getUserByUsername(normalizedUsername) != null) {
             Log.warnf("Registration failed: username already exists: %s", normalizedUsername);
-            throw new BadRequestException("Username already in use");
+            throw new AuthException(Response.Status.BAD_REQUEST, "USERNAME_ALREADY_IN_USE", "Username is already in use");
         }
 
         User user = new User();
@@ -80,12 +80,12 @@ public class AuthService {
 
         if (user == null || !BcryptUtil.matches(request.getPassword(), user.getPassword())) {
             Log.warnf("Authentication failed: invalid credentials for user: %s", normalizedUsername);
-            throw new NotAuthorizedException("Invalid credentials");
+            throw new AuthException("INVALID_CREDENTIALS", "Invalid credentials");
         }
 
         if (user.isLocked()) {
             Log.warnf("Authentication failed: user account is locked: %s", normalizedUsername);
-            throw new NotAuthorizedException("Account is locked");
+            throw new AuthException("ACCOUNT_LOCKED", "Account is locked");
         }
 
         String username = user.getUsername();
@@ -101,7 +101,7 @@ public class AuthService {
     public String createRefreshToken(String username) {
         User user = userService.getUserByUsername(username);
         if (user == null || user.isLocked()) {
-            throw new NotAuthorizedException("Invalid credentials");
+            throw new AuthException("INVALID_CREDENTIALS", "Invalid credentials");
         }
 
         em.createQuery("UPDATE RefreshToken r SET r.revoked = true WHERE r.userId = :userId")
@@ -123,7 +123,7 @@ public class AuthService {
     @Transactional
     public String createAccessToken(String refreshToken) {
         if (refreshToken == null || refreshToken.isBlank()) {
-            throw new NotAuthorizedException("Invalid refresh token");
+            throw new AuthException("INVALID_REFRESH_TOKEN", "Invalid refresh token");
         }
 
         String refreshTokenHash = hashRefreshToken(refreshToken);
@@ -135,20 +135,20 @@ public class AuthService {
 
         if (storedTokenOptional.isEmpty()) {
             Log.warn("Refresh failed: refresh token is invalid");
-            throw new NotAuthorizedException("Invalid refresh token");
+            throw new AuthException("INVALID_REFRESH_TOKEN", "Invalid refresh token");
         }
 
         RefreshToken storedToken = storedTokenOptional.get();
         if (storedToken.isRevoked() || storedToken.isExpired()) {
             Log.warn("Refresh failed: refresh token is invalid, revoked or expired");
-            throw new NotAuthorizedException("Invalid refresh token");
+            throw new AuthException("INVALID_REFRESH_TOKEN", "Invalid refresh token");
         }
 
         User user = em.find(User.class, storedToken.getUserId());
         if (user == null || user.isLocked()) {
             Log.warn("Refresh failed: user not found or locked");
             storedToken.setRevoked(true);
-            throw new NotAuthorizedException("Invalid refresh token");
+            throw new AuthException("INVALID_REFRESH_TOKEN", "Invalid refresh token");
         }
 
         return Jwt.issuer(jwtIssuer)
@@ -182,16 +182,16 @@ public class AuthService {
         User user = userService.getUserByUsername(username);
 
         if (user == null) {
-            throw new NotAuthorizedException("Authentication required");
+            throw new AuthException("AUTHENTICATION_REQUIRED", "Authentication required");
         }
 
         if (!BcryptUtil.matches(request.getCurrentPassword(), user.getPassword())) {
             Log.warnf("Password change failed: invalid current password for user: %s", username);
-            throw new NotAuthorizedException("Current password is incorrect");
+            throw new AuthException("CURRENT_PASSWORD_INCORRECT", "Current password is incorrect");
         }
 
         if (BcryptUtil.matches(request.getNewPassword(), user.getPassword())) {
-            throw new BadRequestException("New password must be different from current password");
+            throw new AuthException(Response.Status.BAD_REQUEST, "PASSWORD_UNCHANGED", "New password must be different from current password");
         }
 
         user.setPassword(BcryptUtil.bcryptHash(request.getNewPassword()));
@@ -209,7 +209,7 @@ public class AuthService {
         User user = userService.getUserByUsername(username);
 
         if (user == null) {
-            throw new NotAuthorizedException("Authentication required");
+            throw new AuthException("AUTHENTICATION_REQUIRED", "Authentication required");
         }
 
         em.createQuery("DELETE FROM RefreshToken r WHERE r.userId = :userId")
@@ -233,14 +233,14 @@ public class AuthService {
             byte[] hashed = messageDigest.digest(refreshToken.getBytes(StandardCharsets.UTF_8));
             return Base64.getUrlEncoder().withoutPadding().encodeToString(hashed);
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Refresh token hashing algorithm is not available", e);
+            throw new AuthException(Response.Status.INTERNAL_SERVER_ERROR, "TOKEN_HASHING_UNAVAILABLE", "Refresh token hashing algorithm is not available");
         }
     }
 
     public String getCurrentUsername() {
         if (securityContext.getUserPrincipal() == null) {
             Log.warn("Authentication required but not provided");
-            throw new NotAuthorizedException("Authentication required");
+            throw new AuthException("AUTHENTICATION_REQUIRED", "Authentication required");
         }
         
         String username = securityContext.getUserPrincipal().getName();
@@ -248,7 +248,7 @@ public class AuthService {
         
         if (user != null && user.isLocked()) {
             Log.warnf("Access denied: user account is locked: %s", username);
-            throw new NotAuthorizedException("Account is locked");
+            throw new AuthException("ACCOUNT_LOCKED", "Account is locked");
         }
         
         return username;

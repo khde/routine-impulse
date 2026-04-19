@@ -7,13 +7,13 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.NotAuthorizedException;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.persistence.NoResultException;
+import jakarta.ws.rs.core.Response;
 
 import org.routineimpulse.dto.TaskRequest;
 import org.routineimpulse.dto.TaskResponse;
 import org.routineimpulse.dto.TaskUpdateRequest;
+import org.routineimpulse.exception.TaskException;
 import org.routineimpulse.model.Task;
 import org.routineimpulse.model.User;
 
@@ -30,7 +30,7 @@ public class TaskService {
     public TaskResponse createTask(TaskRequest request, String username) {
         User user = userService.getUserByUsername(username);
         if (user == null) {
-            throw new NotAuthorizedException("Authentication required");
+            throw new TaskException(Response.Status.UNAUTHORIZED, "AUTHENTICATION_REQUIRED", "Authentication required");
         }
 
         Task task = new Task();
@@ -105,7 +105,7 @@ public class TaskService {
                 .setParameter("username", username)
                 .getSingleResult();
         } catch (NoResultException e) {
-            throw new NotFoundException("Task not found");
+            throw new TaskException(Response.Status.NOT_FOUND, "TASK_NOT_FOUND", "Task not found");
         }
     }
 }
