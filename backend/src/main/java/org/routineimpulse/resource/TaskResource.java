@@ -9,6 +9,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.PATCH;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.PathParam;
@@ -17,6 +18,7 @@ import jakarta.ws.rs.core.Context;
 
 import org.routineimpulse.dto.TaskRequest;
 import org.routineimpulse.dto.TaskResponse;
+import org.routineimpulse.dto.TaskUpdateRequest;
 import org.routineimpulse.service.TaskService;
 import org.routineimpulse.service.AuthService;
 
@@ -53,6 +55,15 @@ public class TaskResource {
     public Response getTaskById(@PathParam("id") Long id) {
         String username = authService.getCurrentUsername();
         TaskResponse response = taskService.getTaskById(id, username);
+
+        return Response.ok(response).build();
+    }
+
+    @PATCH
+    @Path("/{id}")
+    public Response updateTask(@PathParam("id") Long id, @Valid TaskUpdateRequest request) {
+        String username = authService.getCurrentUsername();
+        TaskResponse response = taskService.updateTask(id, request, username);
 
         return Response.ok(response).build();
     }
