@@ -7,6 +7,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.persistence.NoResultException;
 
@@ -22,13 +23,21 @@ public class RoutineService {
     @Inject
     EntityManager em;
 
+    @Inject
+    UserService userService;
+
     @Transactional
     public RoutineResponse createRoutine(RoutineRequest request, String username) {
+        User user = userService.getUserByUsername(username);
+        if (user == null) {
+            throw new NotAuthorizedException("Authentication required");
+        }
+
         Routine routine = new Routine();
         routine.setName(request.getName());
         routine.setDescription(request.getDescription());
 
-        routine.setUser(findUserByUsername(username));
+        routine.setUser(user);
 
         RoutineSchedule schedule = new RoutineSchedule();
         if (request.getSelectedDays() != null) {
@@ -95,11 +104,5 @@ public class RoutineService {
         }
 
         return response;
-    }
-
-    private User findUserByUsername(String username) {
-        return em.createQuery("SELECT u FROM User u WHERE u.username = :username", User.class)
-                .setParameter("username", username)
-                .getSingleResult();
     }
 }

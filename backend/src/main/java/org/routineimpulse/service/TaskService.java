@@ -7,6 +7,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.persistence.NoResultException;
 
@@ -22,14 +23,22 @@ public class TaskService {
     @Inject
     EntityManager em;
 
+    @Inject
+    UserService userService;
+
     @Transactional
     public TaskResponse createTask(TaskRequest request, String username) {
+        User user = userService.getUserByUsername(username);
+        if (user == null) {
+            throw new NotAuthorizedException("Authentication required");
+        }
+
         Task task = new Task();
         task.setDescription(request.getDescription());
         task.setCompleted(request.isCompleted());
         task.setDueDate(request.getDueDate());
 
-        task.setUser(findUserByUsername(username));
+        task.setUser(user);
 
         em.persist(task);
 
@@ -86,12 +95,6 @@ public class TaskService {
         response.setCreationDate(task.getCreationDate());
 
         return response;
-    }
-
-    private User findUserByUsername(String username) {
-        return em.createQuery("SELECT u FROM User u WHERE u.username = :username", User.class)
-            .setParameter("username", username)
-            .getSingleResult();
     }
 
     private Task findTaskByIdAndUsername(Long id, String username) {
