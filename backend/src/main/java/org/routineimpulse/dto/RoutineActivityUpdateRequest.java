@@ -1,0 +1,14 @@
+package org.routineimpulse.dto;
+
+public class RoutineActivityUpdateRequest {
+
+    private boolean completed;
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+}

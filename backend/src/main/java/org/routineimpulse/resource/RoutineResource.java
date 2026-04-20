@@ -10,12 +10,18 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.PATCH;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.PathParam;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.core.Context;
 
+import org.routineimpulse.dto.ActivityFilter;
+import org.routineimpulse.dto.RoutineActivityResponse;
+import org.routineimpulse.dto.RoutineActivityUpdateRequest;
 import org.routineimpulse.dto.RoutineRequest;
 import org.routineimpulse.dto.RoutineResponse;
 import org.routineimpulse.dto.RoutineUpdateRequest;
@@ -75,5 +81,33 @@ public class RoutineResource {
         routineService.deleteRoutine(id, username);
 
         return Response.noContent().build();
+    }
+
+    @GET
+    @Path("/{id}/activity")
+    public Response getRoutineActivity(@PathParam("id") Long id,
+            @QueryParam("from") String from,
+            @QueryParam("to") String to,
+            @DefaultValue("ALL") @QueryParam("status") ActivityFilter status) {
+        String username = authService.getCurrentUsername();
+        List<RoutineActivityResponse> activity = routineService.getRoutineActivity(
+            id,
+            username,
+            from,
+            to,
+            status);
+
+        return Response.ok(activity).build();
+    }
+
+    @PUT
+    @Path("/{id}/activity/{date}")
+    public Response markRoutineActivity(@PathParam("id") Long id,
+            @PathParam("date") String date,
+            @Valid RoutineActivityUpdateRequest request) {
+        String username = authService.getCurrentUsername();
+        RoutineActivityResponse activity = routineService.markRoutineActivity(id, username, date, request);
+
+        return Response.ok(activity).build();
     }
 }
