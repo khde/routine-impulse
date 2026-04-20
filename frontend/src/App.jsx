@@ -6,6 +6,12 @@ import StartPage from "./pages/StartPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import DashboardPage from "./pages/DashboardPage";
+import RoutinesPage from "./pages/RoutinesPage";
+import TasksPage from "./pages/TasksPage";
+import CalenderPage from "./pages/CalenderPage";
+import ProfilePage from "./pages/ProfilePage";
+import LogoutPage from "./pages/LogoutPage";
+import SettingsPage from "./pages/SettingsPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PageShell from "./components/PageShell";
 
@@ -59,6 +65,54 @@ export default function App() {
           element={
             <ProtectedRoute loggedIn={loggedIn}>
               <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/routines"
+          element={
+            <ProtectedRoute loggedIn={loggedIn}>
+              <RoutinesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tasks"
+          element={
+            <ProtectedRoute loggedIn={loggedIn}>
+              <TasksPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/calender"
+          element={
+            <ProtectedRoute loggedIn={loggedIn}>
+              <CalenderPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/account/profile"
+          element={
+            <ProtectedRoute loggedIn={loggedIn}>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/account/logout"
+          element={
+            <ProtectedRoute loggedIn={loggedIn}>
+              <LogoutPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute loggedIn={loggedIn}>
+              <SettingsPage />
             </ProtectedRoute>
           }
         />
