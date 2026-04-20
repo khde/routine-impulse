@@ -101,12 +101,10 @@ public class RoutineResource {
     }
 
     @PUT
-    @Path("/{id}/activity/{date}")
-    public Response markRoutineActivity(@PathParam("id") Long id,
-            @PathParam("date") String date,
-            @Valid RoutineActivityUpdateRequest request) {
+    @Path("/{id}/activity")
+    public Response markRoutineActivity(@PathParam("id") Long id, @Valid RoutineActivityUpdateRequest request) {
         String username = authService.getCurrentUsername();
-        RoutineActivityResponse activity = routineService.markRoutineActivity(id, username, date, request);
+        RoutineActivityResponse activity = routineService.markRoutineActivity(id, username, request);
 
         return Response.ok(activity).build();
     }

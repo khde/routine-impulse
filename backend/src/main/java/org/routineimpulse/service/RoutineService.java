@@ -114,16 +114,8 @@ public class RoutineService {
     }
 
     public List<RoutineActivityResponse> getRoutineActivity(Long routineId, String username, String from, String to, ActivityFilter filter) {
-        if (from == null || to == null) {
-            throw new RoutineException(Response.Status.BAD_REQUEST, "INVALID_DATE_RANGE", "From and to dates are required");
-        }
-
         LocalDate fromDate = parseDate(from);
         LocalDate toDate = parseDate(to);
-        
-        if (fromDate == null || toDate == null) {
-            throw new RoutineException(Response.Status.BAD_REQUEST, "INVALID_DATE_RANGE", "From and to dates are required");
-        }
 
         if (fromDate.isAfter(toDate)) {
             throw new RoutineException(Response.Status.BAD_REQUEST, "INVALID_DATE_RANGE", "From date must not be after to date");
@@ -175,8 +167,8 @@ public class RoutineService {
     }
 
     @Transactional
-    public RoutineActivityResponse markRoutineActivity(Long routineId, String username, String date, RoutineActivityUpdateRequest request) {
-        LocalDate activityDate = parseDate(date);
+    public RoutineActivityResponse markRoutineActivity(Long routineId, String username, RoutineActivityUpdateRequest request) {
+        LocalDate activityDate = parseDate(request.getDate());
 
         if (activityDate.isAfter(LocalDate.now())) {
             throw new RoutineException(Response.Status.BAD_REQUEST, "INVALID_ACTIVITY_DATE", "Activity date must not be in the future");
@@ -236,6 +228,10 @@ public class RoutineService {
     }
 
     private LocalDate parseDate(String rawDate) {
+        if (rawDate == null || rawDate.isBlank()) {
+            throw new RoutineException(Response.Status.BAD_REQUEST, "INVALID_DATE_FORMAT", "Dates must use YYYY-MM-DD format");
+        }
+
         try {
             return LocalDate.parse(rawDate);
         } catch (DateTimeParseException e) {
