@@ -13,7 +13,7 @@ export default function AppSidebarLayout({ title, children }) {
             <NavLink to="/dashboard" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>Dashboard</NavLink>
             <NavLink to="/routines" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>Routines</NavLink>
             <NavLink to="/tasks" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>Tasks</NavLink>
-            <NavLink to="/calender" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>Calender</NavLink>
+            <NavLink to="/calendar" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>Calendar</NavLink>
           </nav>
         </div>
 

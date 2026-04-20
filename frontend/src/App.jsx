@@ -8,7 +8,7 @@ import SignupPage from "./pages/SignupPage";
 import DashboardPage from "./pages/DashboardPage";
 import RoutinesPage from "./pages/RoutinesPage";
 import TasksPage from "./pages/TasksPage";
-import CalenderPage from "./pages/CalenderPage";
+import CalendarPage from "./pages/CalendarPage";
 import ProfilePage from "./pages/ProfilePage";
 import LogoutPage from "./pages/LogoutPage";
 import SettingsPage from "./pages/SettingsPage";
@@ -85,10 +85,10 @@ export default function App() {
           }
         />
         <Route
-          path="/calender"
+          path="/calendar"
           element={
             <ProtectedRoute loggedIn={loggedIn}>
-              <CalenderPage />
+              <CalendarPage />
             </ProtectedRoute>
           }
         />
