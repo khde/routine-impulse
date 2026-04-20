@@ -110,4 +110,12 @@ public class RoutineResource {
 
         return Response.ok(activity).build();
     }
+
+    @GET
+    @Path("/{id}/activity/stats")
+    public Response getRoutineActivityStats(@PathParam("id") Long id) {
+        return Response.status(Response.Status.NOT_IMPLEMENTED)
+            .entity("Not implemented")
+            .build();
+    }
 }
