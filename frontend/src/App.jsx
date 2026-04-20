@@ -104,7 +104,7 @@ export default function App() {
           path="/account/logout"
           element={
             <ProtectedRoute loggedIn={loggedIn}>
-              <LogoutPage />
+              <LogoutPage setLoggedIn={setLoggedIn} apiFetch={apiFetch} />
             </ProtectedRoute>
           }
         />
