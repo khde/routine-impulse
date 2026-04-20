@@ -58,7 +58,7 @@ export default function App() {
           path="/dashboard"
           element={
             <ProtectedRoute loggedIn={loggedIn}>
-              <DashboardPage setLoggedIn={setLoggedIn} apiFetch={apiFetch} />
+              <DashboardPage />
             </ProtectedRoute>
           }
         />

@@ -159,3 +159,76 @@ button:disabled {
 .small-link a:hover {
   text-decoration: underline;
 }
+
+.app-layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 270px 1fr;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 16px;
+  border-right: 1px solid #1f2738;
+  background: #0f1420;
+}
+
+.sidebar-title {
+  margin: 0 0 24px;
+  font-size: 1.45rem;
+}
+
+.sidebar-nav {
+  display: grid;
+  gap: 8px;
+}
+
+.sidebar-item,
+.sidebar-sub-item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #c9d6ee;
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: default;
+}
+
+.sidebar-item.active {
+  border-color: #2f3c58;
+  background: #182338;
+  color: #f2f6ff;
+}
+
+.sidebar-account {
+  margin-bottom: 12px;
+}
+
+.sidebar-section-title {
+  margin: 0 0 6px;
+  color: #aab8d1;
+  font-size: 0.88rem;
+}
+
+.sidebar-sub-item {
+  padding-left: 24px;
+}
+
+.sidebar-item.settings {
+  border-top: 1px solid #1f2738;
+  border-radius: 0;
+  margin-top: 4px;
+  padding-top: 14px;
+}
+
+.dashboard-content {
+  padding: 28px;
+}
+
+.dashboard-content h2 {
+  margin: 0 0 10px;
+  font-size: 1.6rem;
+}
