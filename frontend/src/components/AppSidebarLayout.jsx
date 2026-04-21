@@ -1,6 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 
-export default function AppSidebarLayout({ title, children }) {
+export default function AppSidebarLayout({ title, subtitle, children }) {
   return (
     <main className="app-layout">
       <aside className="sidebar">
@@ -26,7 +26,7 @@ export default function AppSidebarLayout({ title, children }) {
 
       <section className="dashboard-content">
         <h2>{title}</h2>
-        <p className="info-text">Content</p>
+        {subtitle && <p className="info-text app-subtitle">{subtitle}</p>}
         {children}
       </section>
     </main>

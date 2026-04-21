@@ -80,7 +80,7 @@ export default function App() {
           path="/tasks"
           element={
             <ProtectedRoute loggedIn={loggedIn}>
-              <TasksPage />
+              <TasksPage apiFetch={apiFetch} />
             </ProtectedRoute>
           }
         />
@@ -96,7 +96,7 @@ export default function App() {
           path="/account/profile"
           element={
             <ProtectedRoute loggedIn={loggedIn}>
-              <ProfilePage />
+              <ProfilePage setLoggedIn={setLoggedIn} apiFetch={apiFetch} />
             </ProtectedRoute>
           }
         />
@@ -112,7 +112,7 @@ export default function App() {
           path="/settings"
           element={
             <ProtectedRoute loggedIn={loggedIn}>
-              <SettingsPage />
+              <SettingsPage apiFetch={apiFetch} />
             </ProtectedRoute>
           }
         />
