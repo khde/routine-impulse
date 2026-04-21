@@ -170,6 +170,10 @@ button:disabled {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
   padding: 24px 16px;
   border-right: 1px solid #1f2738;
   background: #0f1420;
@@ -405,6 +409,8 @@ button:disabled {
   }
 
   .sidebar {
+    position: static;
+    height: auto;
     border-right: 0;
     border-bottom: 1px solid #1f2738;
     gap: 16px;
