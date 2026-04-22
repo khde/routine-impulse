@@ -338,7 +338,7 @@ export default function RoutinesPage({ apiFetch }) {
   return (
     <AppSidebarLayout
       title="Routines"
-      subtitle="Create routines, define schedule days, and manage each routine's activity slot."
+      subtitle="Manage your reoccuring tasks"
     >
       <div className="tasks-toolbar">
         <button type="button" className="tasks-new-button" onClick={openCreateRoutineModal}>
@@ -437,7 +437,7 @@ export default function RoutinesPage({ apiFetch }) {
                           disabled={busyActivityDate === item.date}
                           onClick={() => handleSetActivityCompleted(item, !item.completed)}
                         >
-                          {item.completed ? "Mark open" : "Mark done"}
+                          {item.completed ? "Reopen" : "Done"}
                         </button>
                       )}
                     </article>

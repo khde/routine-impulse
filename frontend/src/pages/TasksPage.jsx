@@ -136,6 +136,7 @@ export default function TasksPage({ apiFetch }) {
   return (
     <AppSidebarLayout
       title="Tasks"
+      subtitle="Manage your tasks"
     >
       <div className="tasks-toolbar">
         <button
@@ -180,7 +181,7 @@ export default function TasksPage({ apiFetch }) {
                         disabled={busyTaskId === task.id}
                         onClick={() => handleSetCompleted(task, true)}
                       >
-                        Complete
+                        Done
                       </button>
                       <button
                         type="button"
