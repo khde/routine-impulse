@@ -403,6 +403,221 @@ button:disabled {
   border-color: #4a2626;
 }
 
+.routines-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.routine-list {
+  display: grid;
+  gap: 10px;
+}
+
+.routine-list-item {
+  border: 1px solid #1f2738;
+  border-radius: 12px;
+  padding: 10px;
+  background: #111827;
+}
+
+.routine-list-item.active {
+  border-color: #355ea8;
+}
+
+.routine-select {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  text-align: left;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.routine-select span {
+  color: #aab8d1;
+}
+
+.day-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.day-pill {
+  border: 1px solid #2f3c58;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  color: #c9d6ee;
+}
+
+.routine-item-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.routine-selected-name {
+  margin-bottom: 12px;
+}
+
+.activity-section-title {
+  margin: 16px 0 10px;
+  font-size: 0.98rem;
+  color: #c9d6ee;
+}
+
+.heatmap-title {
+  margin-top: 20px;
+}
+
+.activity-toolbar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.activity-toolbar select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #283146;
+  background: #0a0f1a;
+  color: #f6f8fc;
+  outline: none;
+}
+
+.weekday-fieldset {
+  margin: 0;
+  border: 1px solid #283146;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.weekday-fieldset legend {
+  padding: 0 6px;
+  font-size: 0.9rem;
+  color: #c9d6ee;
+}
+
+.weekday-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(56px, 1fr));
+  gap: 8px;
+}
+
+.weekday-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.weekday-option input {
+  width: auto;
+}
+
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(90px, 1fr));
+  gap: 8px;
+}
+
+.week-day-card {
+  border: 1px solid #1f2738;
+  border-radius: 12px;
+  padding: 10px;
+  display: grid;
+  gap: 6px;
+  background: #111827;
+}
+
+.week-day-card.done {
+  border-color: #2e6a45;
+  background: #10251a;
+}
+
+.week-day-card.open {
+  border-color: #2f3c58;
+}
+
+.week-day-card.off {
+  opacity: 0.7;
+}
+
+.week-day-name {
+  margin: 0;
+  font-weight: 600;
+}
+
+.week-day-date,
+.week-day-status {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #aab8d1;
+}
+
+.heatmap-wrap {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14px, 1fr));
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid #1f2738;
+  border-radius: 12px;
+  background: #0b101b;
+}
+
+.heatmap-cell {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 3px;
+  border: 1px solid #152033;
+}
+
+.heatmap-cell.none {
+  background: #0d1422;
+}
+
+.heatmap-cell.open {
+  background: #2e3954;
+}
+
+.heatmap-cell.done {
+  background: #2f8f57;
+}
+
+.heatmap-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+  font-size: 0.82rem;
+  color: #aab8d1;
+}
+
+.heatmap-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.heatmap-legend em {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+}
+
+.heatmap-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
 @media (max-width: 900px) {
   .app-layout {
     grid-template-columns: 1fr;
@@ -427,5 +642,25 @@ button:disabled {
 
   .task-actions-cell {
     flex-direction: column;
+  }
+
+  .routines-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .activity-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .week-grid {
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+  }
+
+  .heatmap-actions {
+    flex-direction: column;
+  }
+
+  .weekday-grid {
+    grid-template-columns: repeat(3, minmax(56px, 1fr));
   }
 }

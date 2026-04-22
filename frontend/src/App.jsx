@@ -72,7 +72,7 @@ export default function App() {
           path="/routines"
           element={
             <ProtectedRoute loggedIn={loggedIn}>
-              <RoutinesPage />
+              <RoutinesPage apiFetch={apiFetch} />
             </ProtectedRoute>
           }
         />
