@@ -575,9 +575,17 @@ button:disabled {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 10px;
   margin-bottom: 12px;
+}
+
+.heatmap-controls-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
 }
 
 .heatmap-view-toggle {
@@ -863,6 +871,11 @@ button:disabled {
   }
 
   .heatmap-toolbar {
+    align-items: stretch;
+  }
+
+  .heatmap-controls-left {
+    width: 100%;
     align-items: stretch;
   }
 

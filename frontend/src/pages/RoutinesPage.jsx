@@ -403,7 +403,7 @@ export default function RoutinesPage({ apiFetch }) {
             <p className="info-text">Select a routine to view activity.</p>
           ) : (
             <>
-              <h4 className="activity-section-title">Weekly Activity</h4>
+              <h4 className="activity-section-title">Completion</h4>
               {loadingWeekActivity ? (
                 <p className="info-text">Loading week...</p>
               ) : (
@@ -445,45 +445,56 @@ export default function RoutinesPage({ apiFetch }) {
                 </div>
               )}
 
-              <h4 className="activity-section-title heatmap-title">Activity Heatmap</h4>
+              <h4 className="activity-section-title heatmap-title">Activity</h4>
 
               <div className="heatmap-toolbar">
-                <div className="heatmap-view-toggle" role="tablist" aria-label="Heatmap view">
-                  <button
-                    type="button"
-                    className={heatmapView === "month" ? "table-action active" : "table-action"}
-                    aria-pressed={heatmapView === "month"}
-                    onClick={() => setHeatmapView("month")}
-                  >
-                    Monthly
-                  </button>
-                  <button
-                    type="button"
-                    className={heatmapView === "year" ? "table-action active" : "table-action"}
-                    aria-pressed={heatmapView === "year"}
-                    onClick={() => setHeatmapView("year")}
-                  >
-                    Yearly
-                  </button>
-                </div>
+                <div className="heatmap-controls-left">
+                  <div className="heatmap-view-toggle" role="tablist" aria-label="Heatmap view">
+                    <button
+                      type="button"
+                      className={heatmapView === "month" ? "table-action active" : "table-action"}
+                      aria-pressed={heatmapView === "month"}
+                      onClick={() => setHeatmapView("month")}
+                    >
+                      Monthly
+                    </button>
+                    <button
+                      type="button"
+                      className={heatmapView === "year" ? "table-action active" : "table-action"}
+                      aria-pressed={heatmapView === "year"}
+                      onClick={() => setHeatmapView("year")}
+                    >
+                      Yearly
+                    </button>
+                  </div>
 
-                <div className="heatmap-navigation">
+                  <div className="heatmap-navigation">
+                    <button
+                      type="button"
+                      className="table-action"
+                      aria-label={`Previous ${heatmapView}`}
+                      onClick={() => setHeatmapFocusDate((current) => shiftHeatmapDate(current, heatmapView, -1))}
+                    >
+                      ←
+                    </button>
+                    <div className="heatmap-period-label">{heatmapRange.label}</div>
+                    <button
+                      type="button"
+                      className="table-action"
+                      aria-label={`Next ${heatmapView}`}
+                      onClick={() => setHeatmapFocusDate((current) => shiftHeatmapDate(current, heatmapView, 1))}
+                    >
+                      →
+                    </button>
+                  </div>
+
                   <button
                     type="button"
                     className="table-action"
-                    aria-label={`Previous ${heatmapView}`}
-                    onClick={() => setHeatmapFocusDate((current) => shiftHeatmapDate(current, heatmapView, -1))}
+                    aria-label={`Jump to current ${heatmapView}`}
+                    onClick={() => setHeatmapFocusDate(getTodayDateString())}
                   >
-                    ←
-                  </button>
-                  <div className="heatmap-period-label">{heatmapRange.label}</div>
-                  <button
-                    type="button"
-                    className="table-action"
-                    aria-label={`Next ${heatmapView}`}
-                    onClick={() => setHeatmapFocusDate((current) => shiftHeatmapDate(current, heatmapView, 1))}
-                  >
-                    →
+                    Current {heatmapView === "month" ? "Month" : "Year"}
                   </button>
                 </div>
               </div>
@@ -561,9 +572,9 @@ export default function RoutinesPage({ apiFetch }) {
                   )}
 
                   <div className="heatmap-legend">
-                    <span><em className="heatmap-cell none" /> Not scheduled</span>
-                    <span><em className="heatmap-cell open" /> Scheduled, open</span>
-                    <span><em className="heatmap-cell done" /> Scheduled, done</span>
+                    <span><em className="heatmap-cell none" /> None</span>
+                    <span><em className="heatmap-cell open" /> Pending</span>
+                    <span><em className="heatmap-cell done" /> Completed</span>
                   </div>
                 </>
               )}
