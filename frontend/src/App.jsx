@@ -88,7 +88,7 @@ export default function App() {
           path="/calendar"
           element={
             <ProtectedRoute loggedIn={loggedIn}>
-              <CalendarPage />
+              <CalendarPage apiFetch={apiFetch} />
             </ProtectedRoute>
           }
         />
