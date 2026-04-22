@@ -383,16 +383,12 @@ export default function RoutinesPage({ apiFetch }) {
         </section>
 
         <section className="panel-card">
-          <h3 className="panel-title">Activity Slot</h3>
+          <h3 className="panel-title routine-main-title">{selectedRoutine ? selectedRoutine.name : "Routine"}</h3>
           {!selectedRoutine ? (
             <p className="info-text">Select a routine to view activity.</p>
           ) : (
             <>
-              <p className="info-text routine-selected-name">
-                Routine: <strong>{selectedRoutine.name}</strong>
-              </p>
-
-              <h4 className="activity-section-title">This Week</h4>
+              <h4 className="activity-section-title">Weekly Activity</h4>
               {loadingWeekActivity ? (
                 <p className="info-text">Loading week...</p>
               ) : (
@@ -535,8 +531,8 @@ export default function RoutinesPage({ apiFetch }) {
 
               <label>
                 Description (optional)
-                <input
-                  type="text"
+                <textarea
+                  className="routine-description-input"
                   value={routineDescription}
                   onChange={(event) => setRoutineDescription(event.target.value)}
                   maxLength={255}
