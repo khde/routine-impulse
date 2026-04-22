@@ -9,9 +9,14 @@ export default function TasksPage({ apiFetch }) {
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [newDescription, setNewDescription] = useState("");
   const [newDueDate, setNewDueDate] = useState("");
+  const [editTaskId, setEditTaskId] = useState(null);
+  const [editDescription, setEditDescription] = useState("");
+  const [editDueDate, setEditDueDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [busyTaskId, setBusyTaskId] = useState(null);
 
   useEffect(() => {
@@ -111,6 +116,82 @@ export default function TasksPage({ apiFetch }) {
     }
   }
 
+  function openEditModal(task) {
+    if (task.completed) {
+      return;
+    }
+
+    setEditTaskId(task.id);
+    setEditDescription(task.description || "");
+    setEditDueDate(toDateTimeLocalValue(task.dueDate));
+    setShowEditModal(true);
+    setStatus("");
+  }
+
+  function closeEditModal() {
+    if (editing) {
+      return;
+    }
+
+    setShowEditModal(false);
+    setEditTaskId(null);
+    setEditDescription("");
+    setEditDueDate("");
+  }
+
+  async function handleEditTask(event) {
+    event.preventDefault();
+
+    if (editTaskId == null) {
+      setStatus("No task selected for editing.");
+      return;
+    }
+
+    const description = editDescription.trim();
+    if (!description) {
+      setStatus("Task description is required.");
+      return;
+    }
+
+    const taskToEdit = tasks.find((task) => task.id === editTaskId);
+    if (!taskToEdit) {
+      setStatus("Task not found.");
+      return;
+    }
+
+    if (taskToEdit.completed) {
+      setStatus("Only open tasks can be edited.");
+      return;
+    }
+
+    setEditing(true);
+    setStatus("");
+
+    try {
+      const response = await apiFetch(`${TASK_API_BASE}/${editTaskId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          description,
+          dueDate: editDueDate ? editDueDate : null
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(await parseError(response));
+      }
+
+      const updatedTask = await response.json();
+      setTasks((prev) => prev.map((task) => (task.id === updatedTask.id ? updatedTask : task)));
+      closeEditModal();
+      setStatus("Task updated.");
+    } catch (error) {
+      setStatus(error.message || "Failed to update task.");
+    } finally {
+      setEditing(false);
+    }
+  }
+
   async function handleDeleteTask(taskId) {
     setBusyTaskId(taskId);
     setStatus("");
@@ -182,6 +263,14 @@ export default function TasksPage({ apiFetch }) {
                         onClick={() => handleSetCompleted(task, true)}
                       >
                         Done
+                      </button>
+                      <button
+                        type="button"
+                        className="table-action"
+                        disabled={busyTaskId === task.id}
+                        onClick={() => openEditModal(task)}
+                      >
+                        Edit
                       </button>
                       <button
                         type="button"
@@ -294,6 +383,51 @@ export default function TasksPage({ apiFetch }) {
           </section>
         </div>
       )}
+
+      {showEditModal && (
+        <div className="modal-overlay" role="presentation" onClick={closeEditModal}>
+          <section
+            className="modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Edit task"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h3 className="modal-title">Edit Task</h3>
+            <form className="task-create-form" onSubmit={handleEditTask}>
+              <label>
+                Task
+                <input
+                  type="text"
+                  value={editDescription}
+                  onChange={(event) => setEditDescription(event.target.value)}
+                  maxLength={255}
+                  placeholder="What do you want to do?"
+                  autoFocus
+                  disabled={editing}
+                />
+              </label>
+              <label>
+                Due Date (optional)
+                <input
+                  type="datetime-local"
+                  value={editDueDate}
+                  onChange={(event) => setEditDueDate(event.target.value)}
+                  disabled={editing}
+                />
+              </label>
+              <div className="modal-actions">
+                <button type="submit" className="primary" disabled={editing}>
+                  {editing ? "Saving..." : "Save Changes"}
+                </button>
+                <button type="button" className="secondary" disabled={editing} onClick={closeEditModal}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
     </AppSidebarLayout>
   );
 }
@@ -320,4 +454,23 @@ function sortByDueDate(left, right) {
   }
 
   return leftTime - rightTime;
+}
+
+function toDateTimeLocalValue(value) {
+  if (!value) {
+    return "";
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return "";
+  }
+
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  const day = String(parsed.getDate()).padStart(2, "0");
+  const hour = String(parsed.getHours()).padStart(2, "0");
+  const minute = String(parsed.getMinutes()).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hour}:${minute}`;
 }
