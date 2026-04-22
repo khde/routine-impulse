@@ -352,8 +352,8 @@ export default function RoutinesPage({ apiFetch }) {
                     className="routine-select"
                     onClick={() => setSelectedRoutineId(routine.id)}
                   >
-                    <strong>{routine.name}</strong>
-                    <span>{routine.description || "No description"}</span>
+                    <strong className="routine-name">{routine.name}</strong>
+                    <span className="routine-description">{routine.description || "No description"}</span>
                     <span className="day-pills">
                       {Array.isArray(routine.selectedDays) && routine.selectedDays.length > 0
                         ? routine.selectedDays.map((day) => (

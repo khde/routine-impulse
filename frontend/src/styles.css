@@ -431,7 +431,8 @@ button:disabled {
 }
 
 .routine-list {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 10px;
 }
 
@@ -440,6 +441,12 @@ button:disabled {
   border-radius: 12px;
   padding: 10px;
   background: #111827;
+  min-width: 0;
+  overflow: hidden;
+  height: 138px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .routine-list-item.active {
@@ -448,6 +455,7 @@ button:disabled {
 
 .routine-select {
   width: 100%;
+  min-width: 0;
   background: transparent;
   border: 0;
   color: inherit;
@@ -458,14 +466,24 @@ button:disabled {
   cursor: pointer;
 }
 
+.routine-name,
+.routine-description {
+  display: block;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .routine-select span {
   color: #aab8d1;
 }
 
 .day-pills {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 6px;
+  overflow: hidden;
 }
 
 .day-pill {
