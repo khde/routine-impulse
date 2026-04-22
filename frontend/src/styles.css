@@ -376,6 +376,48 @@ button:disabled {
   gap: 16px;
 }
 
+.dashboard-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.dashboard-hello {
+  margin: 0 0 16px;
+  font-size: 1.7rem;
+}
+
+.dashboard-routine-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.dashboard-routine-item {
+  border: 1px solid #2f3c58;
+  background: #182338;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dashboard-routine-item.open strong {
+  color: #e8edf5;
+}
+
+.dashboard-routine-item.done {
+  border-color: #2f8f57;
+  background: #173124;
+}
+
+.dashboard-routine-item.done strong {
+  color: #8fe7af;
+}
+
 .panel-card {
   border: 1px solid #1f2738;
   border-radius: 14px;

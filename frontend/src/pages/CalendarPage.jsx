@@ -161,7 +161,7 @@ export default function CalendarPage({ apiFetch }) {
   const selectedDateItems = selectedDate ? calendarItems[selectedDate] || [] : [];
 
   return (
-    <AppSidebarLayout title="Calendar" subtitle="View all tasks and routine activities">
+    <AppSidebarLayout title="Calendar" subtitle="View all tasks and routines">
       <div className="calendar-toolbar">
         <div className="calendar-controls">
           <button type="button" className="table-action" onClick={handlePrevMonth}>
