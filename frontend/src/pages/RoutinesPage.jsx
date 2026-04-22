@@ -299,16 +299,20 @@ export default function RoutinesPage({ apiFetch }) {
 
       const updated = await response.json();
 
-      setWeekActivity((prev) => prev.map((entry) => (entry.date === updated.date ? updated : entry)));
-      setRangeActivity((prev) => prev.map((entry) => (entry.date === updated.date ? updated : entry)));
+      setWeekActivity((prev) => {
+        const next = prev.filter((entry) => entry.date !== updated.date);
+        return [...next, updated];
+      });
 
-      if (!weekActivity.some((entry) => entry.date === updated.date)) {
-        setWeekActivity((prev) => [...prev, updated]);
-      }
+      setRangeActivity((prev) => {
+        const next = prev.filter((entry) => entry.date !== updated.date);
+        return [...next, updated];
+      });
 
-      if (!rangeActivity.some((entry) => entry.date === updated.date)) {
-        setRangeActivity((prev) => [...prev, updated]);
-      }
+      await Promise.all([
+        loadWeekActivity(selectedRoutineId),
+        loadRangeActivity(selectedRoutineId)
+      ]);
     } catch (error) {
       setStatus(error.message || "Failed to update activity.");
     } finally {
@@ -578,19 +582,19 @@ export default function RoutinesPage({ apiFetch }) {
 }
 
 function getTodayDateString() {
-  return new Date().toISOString().slice(0, 10);
+  return toLocalDateString(new Date());
 }
 
 function getDaysAgoDateString(days) {
   const date = new Date();
   date.setDate(date.getDate() - days);
-  return date.toISOString().slice(0, 10);
+  return toLocalDateString(date);
 }
 
 function getCurrentMonthStart() {
   const date = new Date();
   date.setDate(1);
-  return date.toISOString().slice(0, 10);
+  return toLocalDateString(date);
 }
 
 function getWeekStartDateString() {
@@ -598,13 +602,13 @@ function getWeekStartDateString() {
   const day = date.getDay();
   const diff = day === 0 ? -6 : 1 - day;
   date.setDate(date.getDate() + diff);
-  return date.toISOString().slice(0, 10);
+  return toLocalDateString(date);
 }
 
 function getWeekEndDateString() {
   const date = new Date(getWeekStartDateString());
   date.setDate(date.getDate() + 6);
-  return date.toISOString().slice(0, 10);
+  return toLocalDateString(date);
 }
 
 function buildWeekItems(selectedRoutine, weekActivity) {
@@ -622,7 +626,7 @@ function buildWeekItems(selectedRoutine, weekActivity) {
   for (let index = 0; index < 7; index += 1) {
     const current = new Date(start);
     current.setDate(start.getDate() + index);
-    const dateString = current.toISOString().slice(0, 10);
+    const dateString = toLocalDateString(current);
     const dayKey = DAY_OPTIONS[index];
     const scheduled = scheduledDays.has(dayKey);
     const item = activityByDate.get(dateString);
@@ -652,7 +656,7 @@ function buildHeatmapItems(from, to, selectedRoutine, rangeActivity) {
   const end = new Date(to);
 
   for (let cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
-    const dateString = cursor.toISOString().slice(0, 10);
+    const dateString = toLocalDateString(cursor);
     const dayIndex = cursor.getDay() === 0 ? 6 : cursor.getDay() - 1;
     const dayKey = DAY_OPTIONS[dayIndex];
     const scheduled = scheduledDays.has(dayKey);
@@ -669,4 +673,11 @@ function buildHeatmapItems(from, to, selectedRoutine, rangeActivity) {
   }
 
   return result;
+}
+
+function toLocalDateString(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
