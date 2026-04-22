@@ -30,8 +30,8 @@ export default function RoutinesPage({ apiFetch }) {
   const [savingRoutine, setSavingRoutine] = useState(false);
   const [busyRoutineId, setBusyRoutineId] = useState(null);
   const [busyActivityDate, setBusyActivityDate] = useState("");
-  const [activityFrom, setActivityFrom] = useState(getDaysAgoDateString(120));
-  const [activityTo, setActivityTo] = useState(getTodayDateString());
+  const [heatmapView, setHeatmapView] = useState("month");
+  const [heatmapFocusDate, setHeatmapFocusDate] = useState(getTodayDateString());
 
   const selectedRoutine = useMemo(
     () => routines.find((routine) => routine.id === selectedRoutineId) || null,
@@ -43,9 +43,24 @@ export default function RoutinesPage({ apiFetch }) {
     [selectedRoutine, weekActivity]
   );
 
+  const heatmapRange = useMemo(
+    () => getHeatmapRange(heatmapView, heatmapFocusDate),
+    [heatmapView, heatmapFocusDate]
+  );
+
   const heatmapItems = useMemo(
-    () => buildHeatmapItems(activityFrom, activityTo, selectedRoutine, rangeActivity),
-    [activityFrom, activityTo, selectedRoutine, rangeActivity]
+    () => buildHeatmapItems(heatmapRange.start, heatmapRange.end, selectedRoutine, rangeActivity),
+    [heatmapRange.start, heatmapRange.end, selectedRoutine, rangeActivity]
+  );
+
+  const heatmapLayout = useMemo(
+    () => buildHeatmapLayout(heatmapRange.start, heatmapRange.end, heatmapItems),
+    [heatmapRange.start, heatmapRange.end, heatmapItems]
+  );
+
+  const monthlyCalendarLayout = useMemo(
+    () => buildMonthlyCalendarLayout(heatmapRange.start, heatmapRange.end, heatmapItems),
+    [heatmapRange.start, heatmapRange.end, heatmapItems]
   );
 
   useEffect(() => {
@@ -57,8 +72,8 @@ export default function RoutinesPage({ apiFetch }) {
       setRangeActivity([]);
       return;
     }
-    loadRangeActivity(selectedRoutineId);
-  }, [selectedRoutineId, activityFrom, activityTo]);
+    loadRangeActivity(selectedRoutineId, heatmapRange.start, heatmapRange.end);
+  }, [selectedRoutineId, heatmapRange.start, heatmapRange.end]);
 
   useEffect(() => {
     if (!selectedRoutineId) {
@@ -97,8 +112,8 @@ export default function RoutinesPage({ apiFetch }) {
     }
   }
 
-  async function loadRangeActivity(routineId) {
-    if (!activityFrom || !activityTo) {
+  async function loadRangeActivity(routineId, from, to) {
+    if (!from || !to) {
       setRangeActivity([]);
       return;
     }
@@ -107,8 +122,8 @@ export default function RoutinesPage({ apiFetch }) {
 
     try {
       const query = new URLSearchParams({
-        from: activityFrom,
-        to: activityTo,
+        from,
+        to,
         status: "ALL"
       });
 
@@ -311,7 +326,7 @@ export default function RoutinesPage({ apiFetch }) {
 
       await Promise.all([
         loadWeekActivity(selectedRoutineId),
-        loadRangeActivity(selectedRoutineId)
+        loadRangeActivity(selectedRoutineId, heatmapRange.start, heatmapRange.end)
       ]);
     } catch (error) {
       setStatus(error.message || "Failed to update activity.");
@@ -432,38 +447,119 @@ export default function RoutinesPage({ apiFetch }) {
 
               <h4 className="activity-section-title heatmap-title">Activity Heatmap</h4>
 
-              <div className="activity-toolbar">
-                <label>
-                  From
-                  <input
-                    type="date"
-                    value={activityFrom}
-                    onChange={(event) => setActivityFrom(event.target.value)}
-                  />
-                </label>
-                <label>
-                  To
-                  <input
-                    type="date"
-                    value={activityTo}
-                    onChange={(event) => setActivityTo(event.target.value)}
-                  />
-                </label>
+              <div className="heatmap-toolbar">
+                <div className="heatmap-view-toggle" role="tablist" aria-label="Heatmap view">
+                  <button
+                    type="button"
+                    className={heatmapView === "month" ? "table-action active" : "table-action"}
+                    aria-pressed={heatmapView === "month"}
+                    onClick={() => setHeatmapView("month")}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    type="button"
+                    className={heatmapView === "year" ? "table-action active" : "table-action"}
+                    aria-pressed={heatmapView === "year"}
+                    onClick={() => setHeatmapView("year")}
+                  >
+                    Yearly
+                  </button>
+                </div>
+
+                <div className="heatmap-navigation">
+                  <button
+                    type="button"
+                    className="table-action"
+                    aria-label={`Previous ${heatmapView}`}
+                    onClick={() => setHeatmapFocusDate((current) => shiftHeatmapDate(current, heatmapView, -1))}
+                  >
+                    ←
+                  </button>
+                  <div className="heatmap-period-label">{heatmapRange.label}</div>
+                  <button
+                    type="button"
+                    className="table-action"
+                    aria-label={`Next ${heatmapView}`}
+                    onClick={() => setHeatmapFocusDate((current) => shiftHeatmapDate(current, heatmapView, 1))}
+                  >
+                    →
+                  </button>
+                </div>
               </div>
 
               {loadingRangeActivity ? (
                 <p className="info-text">Loading activity...</p>
               ) : (
                 <>
-                  <div className="heatmap-wrap" role="img" aria-label="Routine activity heatmap">
-                    {heatmapItems.map((item) => (
-                      <span
-                        key={item.date}
-                        className={`heatmap-cell ${item.level}`}
-                        title={`${item.date} - ${item.tooltip}`}
-                      />
-                    ))}
-                  </div>
+                  {heatmapView === "month" ? (
+                    <div className="month-calendar-card" role="img" aria-label="Monthly routine activity calendar">
+                      <div className="month-calendar-weekdays" aria-hidden="true">
+                        {monthlyCalendarLayout.weekdayLabels.map((label) => (
+                          <span key={label}>{label}</span>
+                        ))}
+                      </div>
+
+                      <div className="month-calendar-grid">
+                        {monthlyCalendarLayout.cells.map((item, index) => (
+                          item ? (
+                            <span
+                              key={item.date}
+                              className={`month-calendar-cell ${item.level}`}
+                              title={`${item.date} - ${item.tooltip}`}
+                            >
+                              {item.dayNumber}
+                            </span>
+                          ) : (
+                            <span key={index} className="month-calendar-cell blank" aria-hidden="true" />
+                          )
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="heatmap-card" role="img" aria-label="Routine activity heatmap">
+                      <div className="heatmap-month-row" aria-hidden="true">
+                        <div className="heatmap-axis-spacer" />
+                        <div className="heatmap-month-track" style={{ gridTemplateColumns: `repeat(${heatmapLayout.columnCount}, 12px)` }}>
+                          {heatmapLayout.monthLabels.map((month) => (
+                            <span
+                              key={`${month.label}-${month.column}`}
+                              className="heatmap-month-label"
+                              style={{ gridColumn: month.column + 1 }}
+                            >
+                              {month.label}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="heatmap-graph">
+                        <div className="heatmap-weekday-axis" aria-hidden="true">
+                          {heatmapLayout.weekdayLabels.map((label) => (
+                            <span key={label}>{label}</span>
+                          ))}
+                        </div>
+
+                        <div
+                          className="heatmap-grid"
+                          style={{ gridTemplateColumns: `repeat(${heatmapLayout.columnCount}, 12px)` }}
+                        >
+                          {heatmapLayout.cells.map((item, index) => (
+                            item ? (
+                              <span
+                                key={item.date}
+                                className={`heatmap-cell ${item.level}`}
+                                title={`${item.date} - ${item.tooltip}`}
+                              />
+                            ) : (
+                              <span key={index} className="heatmap-cell blank" aria-hidden="true" />
+                            )
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="heatmap-legend">
                     <span><em className="heatmap-cell none" /> Not scheduled</span>
                     <span><em className="heatmap-cell open" /> Scheduled, open</span>
@@ -473,32 +569,7 @@ export default function RoutinesPage({ apiFetch }) {
               )}
 
               {!loadingRangeActivity && heatmapItems.length === 0 && (
-                <p className="info-text">No days in selected range.</p>
-              )}
-
-              {heatmapItems.length > 0 && (
-                <div className="heatmap-actions">
-                  <button
-                    type="button"
-                    className="table-action"
-                    onClick={() => {
-                      setActivityFrom(getDaysAgoDateString(90));
-                      setActivityTo(getTodayDateString());
-                    }}
-                  >
-                    Last 90 days
-                  </button>
-                  <button
-                    type="button"
-                    className="table-action"
-                    onClick={() => {
-                      setActivityFrom(getDaysAgoDateString(180));
-                      setActivityTo(getTodayDateString());
-                    }}
-                  >
-                    Last 180 days
-                  </button>
-                </div>
+                <p className="info-text">No days in the selected period.</p>
               )}
             </>
           )}
@@ -593,6 +664,42 @@ function getCurrentMonthStart() {
   return toLocalDateString(date);
 }
 
+function getHeatmapRange(view, focusDate) {
+  const date = new Date(focusDate);
+
+  if (view === "year") {
+    const year = date.getFullYear();
+    return {
+      start: `${year}-01-01`,
+      end: `${year}-12-31`,
+      label: `${year}`
+    };
+  }
+
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const start = new Date(year, month, 1);
+  const end = new Date(year, month + 1, 0);
+
+  return {
+    start: toLocalDateString(start),
+    end: toLocalDateString(end),
+    label: start.toLocaleDateString(undefined, { month: "long", year: "numeric" })
+  };
+}
+
+function shiftHeatmapDate(focusDate, view, direction) {
+  const date = new Date(focusDate);
+
+  if (view === "year") {
+    date.setFullYear(date.getFullYear() + direction);
+    return toLocalDateString(date);
+  }
+
+  date.setMonth(date.getMonth() + direction);
+  return toLocalDateString(date);
+}
+
 function getWeekStartDateString() {
   const date = new Date();
   const day = date.getDay();
@@ -648,8 +755,8 @@ function buildHeatmapItems(from, to, selectedRoutine, rangeActivity) {
   const activityByDate = new Map((rangeActivity || []).map((entry) => [entry.date, entry]));
   const result = [];
 
-  const start = new Date(from);
-  const end = new Date(to);
+  const start = parseLocalDate(from);
+  const end = parseLocalDate(to);
 
   for (let cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
     const dateString = toLocalDateString(cursor);
@@ -671,9 +778,121 @@ function buildHeatmapItems(from, to, selectedRoutine, rangeActivity) {
   return result;
 }
 
+function buildHeatmapLayout(from, to, heatmapItems) {
+  if (!from || !to || from > to) {
+    return {
+      cells: [],
+      columnCount: 0,
+      weekdayLabels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      monthLabels: []
+    };
+  }
+
+  const start = startOfWeek(parseLocalDate(from));
+  const end = endOfWeek(parseLocalDate(to));
+  const totalDays = Math.floor((end - start) / 86400000) + 1;
+  const columnCount = Math.max(1, Math.ceil(totalDays / 7));
+  const cells = [];
+  const monthLabels = [];
+  const seenMonths = new Set();
+  const heatmapByDate = new Map((heatmapItems || []).map((entry) => [entry.date, entry]));
+
+  for (let cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
+    const dateString = toLocalDateString(cursor);
+    const inRange = dateString >= from && dateString <= to;
+    const item = heatmapByDate.get(dateString);
+
+    if (!inRange) {
+      cells.push(null);
+      continue;
+    }
+
+    cells.push(item || { date: dateString, level: "none", tooltip: "Not scheduled" });
+
+    const monthKey = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
+    if (inRange && !seenMonths.has(monthKey) && cursor.getDate() <= 7) {
+      seenMonths.add(monthKey);
+      monthLabels.push({
+        label: cursor.toLocaleDateString(undefined, { month: "short" }),
+        column: Math.floor((cells.length - 1) / 7)
+      });
+    }
+  }
+
+  return {
+    cells,
+    columnCount,
+    weekdayLabels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    monthLabels
+  };
+}
+
+function buildMonthlyCalendarLayout(from, to, heatmapItems) {
+  if (!from || !to || from > to) {
+    return {
+      weekdayLabels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      cells: []
+    };
+  }
+
+  const start = startOfWeek(parseLocalDate(from));
+  const end = endOfWeek(parseLocalDate(to));
+  const heatmapByDate = new Map((heatmapItems || []).map((entry) => [entry.date, entry]));
+  const cells = [];
+
+  for (let cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
+    const dateString = toLocalDateString(cursor);
+    const inRange = dateString >= from && dateString <= to;
+
+    if (!inRange) {
+      cells.push(null);
+      continue;
+    }
+
+    const item = heatmapByDate.get(dateString) || {
+      date: dateString,
+      level: "none",
+      tooltip: "Not scheduled"
+    };
+
+    cells.push({
+      ...item,
+      dayNumber: cursor.getDate()
+    });
+  }
+
+  return {
+    weekdayLabels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    cells
+  };
+}
+
+function startOfWeek(date) {
+  const result = new Date(date);
+  const day = result.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  result.setDate(result.getDate() + diff);
+  result.setHours(0, 0, 0, 0);
+  return result;
+}
+
+function endOfWeek(date) {
+  const result = new Date(date);
+  const day = result.getDay();
+  const diff = day === 0 ? 0 : 7 - day;
+  result.setDate(result.getDate() + diff);
+  result.setHours(0, 0, 0, 0);
+  return result;
+}
+
 function toLocalDateString(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function parseLocalDate(dateString) {
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day);
 }
