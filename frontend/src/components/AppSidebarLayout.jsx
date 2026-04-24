@@ -1,26 +1,84 @@
+import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 
+const MAIN_NAV_ITEMS = [
+  { to: "/dashboard", label: "Dashboard", icon: "⌂" },
+  { to: "/routines", label: "Routines", icon: "⟳" },
+  { to: "/tasks", label: "Tasks", icon: "✓" },
+  { to: "/calendar", label: "Calendar", icon: "◷" }
+];
+
+const ACCOUNT_NAV_ITEMS = [
+  { to: "/account/account", label: "Account", icon: "◉" },
+  { to: "/settings", label: "Settings", icon: "⚙" },
+  { to: "/account/logout", label: "Logout", icon: "⇥" }
+];
+
 export default function AppSidebarLayout({ title, subtitle, children }) {
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    const value = window.localStorage.getItem("sidebar-collapsed");
+    if (value === "1") {
+      setCollapsed(true);
+    }
+  }, []);
+
+  function toggleCollapsed() {
+    setCollapsed((prev) => {
+      const next = !prev;
+      window.localStorage.setItem("sidebar-collapsed", next ? "1" : "0");
+      return next;
+    });
+  }
+
   return (
-    <main className="app-layout">
-      <aside className="sidebar">
+    <main className={collapsed ? "app-layout sidebar-collapsed" : "app-layout"}>
+      <aside className={collapsed ? "sidebar collapsed" : "sidebar"}>
         <div>
-          <h1 className="sidebar-title">
-            <Link to="/dashboard" className="sidebar-brand-link">Routine Impulse</Link>
-          </h1>
+          <div className="sidebar-header">
+            <h1 className="sidebar-title">
+              <Link to="/dashboard" className="sidebar-brand-link">{collapsed ? "RI" : "Routine Impulse"}</Link>
+            </h1>
+
+            <button
+              type="button"
+              className="sidebar-collapse-toggle"
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-pressed={collapsed}
+              onClick={toggleCollapsed}
+            >
+              {collapsed ? "»" : "«"}
+            </button>
+          </div>
 
           <nav className="sidebar-nav" aria-label="Main navigation">
-            <NavLink to="/dashboard" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>Dashboard</NavLink>
-            <NavLink to="/routines" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>Routines</NavLink>
-            <NavLink to="/tasks" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>Tasks</NavLink>
-            <NavLink to="/calendar" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>Calendar</NavLink>
+            {MAIN_NAV_ITEMS.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                title={collapsed ? item.label : undefined}
+                className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}
+              >
+                <span className="sidebar-item-icon" aria-hidden="true">{item.icon}</span>
+                {!collapsed && <span className="sidebar-item-label">{item.label}</span>}
+              </NavLink>
+            ))}
           </nav>
         </div>
 
         <div className="sidebar-bottom-nav" aria-label="Account and settings navigation">
-          <NavLink to="/account/account" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>Account</NavLink>
-          <NavLink to="/settings" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>Settings</NavLink>
-          <NavLink to="/account/logout" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>Logout</NavLink>
+          {ACCOUNT_NAV_ITEMS.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              title={collapsed ? item.label : undefined}
+              className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}
+            >
+              <span className="sidebar-item-icon" aria-hidden="true">{item.icon}</span>
+              {!collapsed && <span className="sidebar-item-label">{item.label}</span>}
+            </NavLink>
+          ))}
         </div>
       </aside>
 
