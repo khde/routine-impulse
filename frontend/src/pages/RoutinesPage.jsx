@@ -440,6 +440,7 @@ export default function RoutinesPage({ apiFetch }) {
             <p className="info-text">Select a routine to view activity.</p>
           ) : (
             <>
+              <p className="routine-main-description">{selectedRoutine.description || "No description"}</p>
               <h4 className="activity-section-title">Completion</h4>
               {loadingWeekActivity ? (
                 <p className="info-text">Loading week...</p>

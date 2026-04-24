@@ -441,6 +441,12 @@ button:disabled {
   line-height: 1.2;
 }
 
+.routine-main-description {
+  margin: 0 0 12px;
+  color: #aab8d1;
+  white-space: pre-line;
+}
+
 .panel-header-row {
   display: flex;
   justify-content: space-between;
