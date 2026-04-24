@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import AppSidebarLayout from "../components/AppSidebarLayout";
 import { parseError } from "../utils/parseError";
 
@@ -14,6 +15,7 @@ const DAY_OPTIONS = [
 ];
 
 export default function RoutinesPage({ apiFetch }) {
+  const [searchParams] = useSearchParams();
   const [routines, setRoutines] = useState([]);
   const [selectedRoutineId, setSelectedRoutineId] = useState(null);
   const [rangeActivity, setRangeActivity] = useState([]);
@@ -37,6 +39,20 @@ export default function RoutinesPage({ apiFetch }) {
     () => routines.find((routine) => routine.id === selectedRoutineId) || null,
     [routines, selectedRoutineId]
   );
+
+  const requestedRoutineId = useMemo(() => {
+    const value = searchParams.get("routineId");
+    if (!value) {
+      return null;
+    }
+
+    const parsed = Number(value);
+    if (Number.isNaN(parsed)) {
+      return null;
+    }
+
+    return parsed;
+  }, [searchParams]);
 
   const weekItems = useMemo(
     () => buildWeekItems(selectedRoutine, weekActivity),
@@ -103,7 +119,11 @@ export default function RoutinesPage({ apiFetch }) {
       if (sorted.length === 0) {
         setSelectedRoutineId(null);
       } else if (!sorted.some((routine) => routine.id === selectedRoutineId)) {
-        setSelectedRoutineId(sorted[0].id);
+        const requestedRoutine = requestedRoutineId === null
+          ? null
+          : sorted.find((routine) => routine.id === requestedRoutineId) || null;
+
+        setSelectedRoutineId(requestedRoutine ? requestedRoutine.id : sorted[0].id);
       }
     } catch (error) {
       setStatus(error.message || "Failed to load routines.");

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AppSidebarLayout from "../components/AppSidebarLayout";
 import { USER_PROFILE_API } from "../config/api";
 import { parseError } from "../utils/parseError";
@@ -7,6 +8,7 @@ const TASK_API_BASE = "/api/task";
 const ROUTINE_API_BASE = "/api/routine";
 
 export default function DashboardPage({ apiFetch }) {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [routines, setRoutines] = useState([]);
@@ -298,13 +300,22 @@ export default function DashboardPage({ apiFetch }) {
                       <span>{item.routineName}</span>
                       <div className="dashboard-routine-actions">
                         <strong>{item.completed ? "Completed" : "Open"}</strong>
+                        {!item.completed && (
+                          <button
+                            type="button"
+                            className="table-action"
+                            disabled={busyRoutineId === item.routineId}
+                            onClick={() => handleSetTodayRoutineCompleted(item, true)}
+                          >
+                            Done
+                          </button>
+                        )}
                         <button
                           type="button"
                           className="table-action"
-                          disabled={busyRoutineId === item.routineId}
-                          onClick={() => handleSetTodayRoutineCompleted(item, !item.completed)}
+                          onClick={() => navigate(`/routines?routineId=${encodeURIComponent(String(item.routineId))}`)}
                         >
-                          {item.completed ? "Reopen" : "Done"}
+                          View
                         </button>
                       </div>
                     </li>
