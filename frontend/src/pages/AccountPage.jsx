@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppSidebarLayout from "../components/AppSidebarLayout";
-import { AUTH_API_BASE, USER_PROFILE_API } from "../config/api";
+import { AUTH_API_BASE, USER_ACCOUNT_API } from "../config/api";
 import { parseError } from "../utils/parseError";
 
-export default function ProfilePage({ setLoggedIn, apiFetch }) {
-  const [profile, setProfile] = useState(null);
+export default function AccountPage({ setLoggedIn, apiFetch }) {
+  const [account, setAccount] = useState(null);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -15,23 +15,23 @@ export default function ProfilePage({ setLoggedIn, apiFetch }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    loadProfile();
+    loadAccount();
   }, []);
 
-  async function loadProfile() {
+  async function loadAccount() {
     setLoading(true);
     setStatus("");
 
     try {
-      const response = await apiFetch(USER_PROFILE_API, { method: "GET" });
+      const response = await apiFetch(USER_ACCOUNT_API, { method: "GET" });
       if (!response.ok) {
         throw new Error(await parseError(response));
       }
 
-      const profileData = await response.json();
-      setProfile(profileData);
+      const accountData = await response.json();
+      setAccount(accountData);
     } catch (error) {
-      setStatus(error.message || "Failed to load profile.");
+      setStatus(error.message || "Failed to load account.");
     } finally {
       setLoading(false);
     }
@@ -80,26 +80,26 @@ export default function ProfilePage({ setLoggedIn, apiFetch }) {
   }
 
   return (
-    <AppSidebarLayout title="Profile">
-      <div className="profile-grid">
+    <AppSidebarLayout title="Account">
+      <div className="account-grid">
         <section className="panel-card">
           <h3 className="panel-title">Account</h3>
 
           {loading ? (
-            <p className="info-text">Loading profile...</p>
+            <p className="info-text">Loading account...</p>
           ) : (
-            <dl className="profile-list">
+            <dl className="account-list">
               <div>
                 <dt>Username</dt>
-                <dd>{profile?.username || "-"}</dd>
+                <dd>{account?.username || "-"}</dd>
               </div>
               <div>
                 <dt>Email</dt>
-                <dd>{profile?.email || "-"}</dd>
+                <dd>{account?.email || "-"}</dd>
               </div>
               <div>
                 <dt>Account creation</dt>
-                <dd>{formatDate(profile?.creationDate)}</dd>
+                <dd>{formatDate(account?.creationDate)}</dd>
               </div>
             </dl>
           )}

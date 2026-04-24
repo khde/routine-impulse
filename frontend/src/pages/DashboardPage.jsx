@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppSidebarLayout from "../components/AppSidebarLayout";
-import { USER_PROFILE_API } from "../config/api";
+import { USER_ACCOUNT_API } from "../config/api";
 import { parseError } from "../utils/parseError";
 
 const TASK_API_BASE = "/api/task";
@@ -9,7 +9,7 @@ const ROUTINE_API_BASE = "/api/routine";
 
 export default function DashboardPage({ apiFetch }) {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState(null);
+  const [account, setAccount] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [routines, setRoutines] = useState([]);
   const [todayRoutineItems, setTodayRoutineItems] = useState([]);
@@ -48,14 +48,14 @@ export default function DashboardPage({ apiFetch }) {
     setStatus("");
 
     try {
-      const [profileResponse, tasksResponse, routinesResponse] = await Promise.all([
-        apiFetch(USER_PROFILE_API, { method: "GET" }),
+      const [accountResponse, tasksResponse, routinesResponse] = await Promise.all([
+        apiFetch(USER_ACCOUNT_API, { method: "GET" }),
         apiFetch(`${TASK_API_BASE}/all`, { method: "GET" }),
         apiFetch(`${ROUTINE_API_BASE}/all`, { method: "GET" })
       ]);
 
-      if (!profileResponse.ok) {
-        throw new Error(await parseError(profileResponse));
+      if (!accountResponse.ok) {
+        throw new Error(await parseError(accountResponse));
       }
 
       if (!tasksResponse.ok) {
@@ -66,11 +66,11 @@ export default function DashboardPage({ apiFetch }) {
         throw new Error(await parseError(routinesResponse));
       }
 
-      const profileData = await profileResponse.json();
+      const accountData = await accountResponse.json();
       const taskData = await tasksResponse.json();
       const routineData = await routinesResponse.json();
 
-      setProfile(profileData || null);
+      setAccount(accountData || null);
       setTasks(Array.isArray(taskData) ? taskData : []);
       setRoutines(Array.isArray(routineData) ? routineData : []);
 
@@ -207,7 +207,7 @@ export default function DashboardPage({ apiFetch }) {
       ) : (
         <>
           <h1 className="dashboard-hello">
-            Hello{profile?.username ? `, ${profile.username}` : ""}.
+            Hello{account?.username ? `, ${account.username}` : ""}.
           </h1>
 
           <div className="dashboard-grid">

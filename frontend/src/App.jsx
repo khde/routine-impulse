@@ -9,7 +9,7 @@ import DashboardPage from "./pages/DashboardPage";
 import RoutinesPage from "./pages/RoutinesPage";
 import TasksPage from "./pages/TasksPage";
 import CalendarPage from "./pages/CalendarPage";
-import ProfilePage from "./pages/ProfilePage";
+import AccountPage from "./pages/AccountPage";
 import LogoutPage from "./pages/LogoutPage";
 import SettingsPage from "./pages/SettingsPage";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -93,10 +93,10 @@ export default function App() {
           }
         />
         <Route
-          path="/account/profile"
+          path="/account/account"
           element={
             <ProtectedRoute loggedIn={loggedIn}>
-              <ProfilePage setLoggedIn={setLoggedIn} apiFetch={apiFetch} />
+              <AccountPage setLoggedIn={setLoggedIn} apiFetch={apiFetch} />
             </ProtectedRoute>
           }
         />

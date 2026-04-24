@@ -371,7 +371,7 @@ button:disabled {
   padding: 10px 12px;
 }
 
-.profile-grid {
+.account-grid {
   display: grid;
   gap: 16px;
 }
@@ -448,22 +448,22 @@ button:disabled {
   margin-bottom: 10px;
 }
 
-.profile-list {
+.account-list {
   margin: 0;
   display: grid;
   gap: 10px;
 }
 
-.profile-list dt {
+.account-list dt {
   font-size: 0.84rem;
   color: #aab8d1;
 }
 
-.profile-list dd {
+.account-list dd {
   margin: 3px 0 0;
 }
 
-.profile-form {
+.account-form {
   display: grid;
   gap: 12px;
 }

@@ -19,9 +19,9 @@ public class UserResource {
     UserService userService;
 
     @GET
-    @Path("/profile")
-    public Response getProfile() {
-        return Response.ok(userService.getCurrentProfile()).build();
+    @Path("/account")
+    public Response getAccount() {
+        return Response.ok(userService.getCurrentAccount()).build();
     }
 
     @GET

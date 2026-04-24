@@ -2,7 +2,7 @@ package org.routineimpulse.dto;
 
 import java.time.LocalDateTime;
 
-public class UserProfile {
+public class Account {
     private String username;
     private String email;
     private LocalDateTime creationDate;

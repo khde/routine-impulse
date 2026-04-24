@@ -18,7 +18,7 @@ export default function AppSidebarLayout({ title, subtitle, children }) {
         </div>
 
         <div className="sidebar-bottom-nav" aria-label="Account and settings navigation">
-          <NavLink to="/account/profile" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>Profile</NavLink>
+          <NavLink to="/account/account" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>Account</NavLink>
           <NavLink to="/settings" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>Settings</NavLink>
           <NavLink to="/account/logout" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>Logout</NavLink>
         </div>

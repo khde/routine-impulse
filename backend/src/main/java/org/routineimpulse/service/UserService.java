@@ -6,7 +6,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 
 import org.routineimpulse.model.User;
-import org.routineimpulse.dto.UserProfile;
+import org.routineimpulse.dto.Account;
 
 @ApplicationScoped
 public class UserService {
@@ -32,7 +32,7 @@ public class UserService {
                  .orElse(null);
     }
 
-    public UserProfile getCurrentProfile() {
+    public Account getCurrentAccount() {
         String currentUsername = authService.getCurrentUsername();
 
         User user = getUserByUsername(currentUsername);
@@ -41,11 +41,11 @@ public class UserService {
             return null;
         }
 
-        UserProfile profile = new UserProfile();
-        profile.setUsername(user.getUsername());
-        profile.setEmail(user.getEmail());
-        profile.setCreationDate(user.getCreationDate());
+        Account account = new Account();
+        account.setUsername(user.getUsername());
+        account.setEmail(user.getEmail());
+        account.setCreationDate(user.getCreationDate());
 
-        return profile;
+        return account;
     }
 }

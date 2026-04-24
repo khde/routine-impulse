@@ -60,7 +60,7 @@ export default function SettingsPage({ apiFetch }) {
     <AppSidebarLayout title="Settings">
       <section className="panel-card">
         <h3 className="panel-title">Change Password</h3>
-        <form className="profile-form" onSubmit={handleChangePassword}>
+        <form className="account-form" onSubmit={handleChangePassword}>
           <label>
             Current Password
             <input
