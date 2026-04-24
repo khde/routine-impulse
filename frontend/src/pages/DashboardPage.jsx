@@ -13,6 +13,8 @@ export default function DashboardPage({ apiFetch }) {
   const [todayRoutineItems, setTodayRoutineItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("");
+  const [busyTaskId, setBusyTaskId] = useState(null);
+  const [busyRoutineId, setBusyRoutineId] = useState(null);
 
   const openTasks = useMemo(
     () => tasks.filter((task) => !task.completed),
@@ -132,6 +134,68 @@ export default function DashboardPage({ apiFetch }) {
     }
   }
 
+  async function handleSetTaskCompleted(task, completed) {
+    setBusyTaskId(task.id);
+    setStatus("");
+
+    try {
+      const response = await apiFetch(`${TASK_API_BASE}/${task.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed })
+      });
+
+      if (!response.ok) {
+        throw new Error(await parseError(response));
+      }
+
+      const updatedTask = await response.json();
+      setTasks((prev) => prev.map((item) => (item.id === updatedTask.id ? updatedTask : item)));
+    } catch (error) {
+      setStatus(error.message || "Failed to update task.");
+    } finally {
+      setBusyTaskId(null);
+    }
+  }
+
+  async function handleSetTodayRoutineCompleted(item, completed) {
+    const today = getTodayDateString();
+
+    setBusyRoutineId(item.routineId);
+    setStatus("");
+
+    try {
+      const response = await apiFetch(`${ROUTINE_API_BASE}/${item.routineId}/activity`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          date: today,
+          completed
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(await parseError(response));
+      }
+
+      const updatedActivity = await response.json();
+      setTodayRoutineItems((prev) =>
+        prev.map((entry) =>
+          entry.routineId === item.routineId
+            ? {
+                ...entry,
+                completed: !!updatedActivity.completed
+              }
+            : entry
+        )
+      );
+    } catch (error) {
+      setStatus(error.message || "Failed to update routine.");
+    } finally {
+      setBusyRoutineId(null);
+    }
+  }
+
   return (
     <AppSidebarLayout title="Dashboard">
       {status && <p className="status">{status}</p>}
@@ -159,6 +223,7 @@ export default function DashboardPage({ apiFetch }) {
                         <tr>
                           <th>Description</th>
                           <th>Due Date</th>
+                          <th>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -166,6 +231,16 @@ export default function DashboardPage({ apiFetch }) {
                           <tr key={task.id}>
                             <td>{task.description}</td>
                             <td>{formatDate(task.dueDate)}</td>
+                            <td className="task-actions-cell">
+                              <button
+                                type="button"
+                                className="table-action"
+                                disabled={busyTaskId === task.id}
+                                onClick={() => handleSetTaskCompleted(task, true)}
+                              >
+                                Done
+                              </button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -185,6 +260,7 @@ export default function DashboardPage({ apiFetch }) {
                         <tr>
                           <th>Description</th>
                           <th>Due Date</th>
+                          <th>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -192,6 +268,16 @@ export default function DashboardPage({ apiFetch }) {
                           <tr key={task.id}>
                             <td>{task.description}</td>
                             <td>{formatDate(task.dueDate)}</td>
+                            <td className="task-actions-cell">
+                              <button
+                                type="button"
+                                className="table-action"
+                                disabled={busyTaskId === task.id}
+                                onClick={() => handleSetTaskCompleted(task, true)}
+                              >
+                                Done
+                              </button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -210,7 +296,17 @@ export default function DashboardPage({ apiFetch }) {
                   {todayRoutineItems.map((item) => (
                     <li key={item.routineId} className={item.completed ? "dashboard-routine-item done" : "dashboard-routine-item open"}>
                       <span>{item.routineName}</span>
-                      <strong>{item.completed ? "Completed" : "Open"}</strong>
+                      <div className="dashboard-routine-actions">
+                        <strong>{item.completed ? "Completed" : "Open"}</strong>
+                        <button
+                          type="button"
+                          className="table-action"
+                          disabled={busyRoutineId === item.routineId}
+                          onClick={() => handleSetTodayRoutineCompleted(item, !item.completed)}
+                        >
+                          {item.completed ? "Reopen" : "Done"}
+                        </button>
+                      </div>
                     </li>
                   ))}
                 </ul>

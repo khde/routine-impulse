@@ -418,6 +418,12 @@ button:disabled {
   color: #8fe7af;
 }
 
+.dashboard-routine-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .panel-card {
   border: 1px solid #1f2738;
   border-radius: 14px;
