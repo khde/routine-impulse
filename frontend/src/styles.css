@@ -237,6 +237,8 @@ button:disabled {
 .sidebar-nav {
   display: grid;
   gap: 8px;
+  border-top: 1px solid #1f2738;
+  padding-top: 14px;
 }
 
 .sidebar-item {
