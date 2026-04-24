@@ -4,7 +4,12 @@
 
 ### Build routines with simple daily impulses.
 
+Routine Impulse is a habit and task tracking app.
+It helps users build routines with simple daily actions.
+
 [Quick Start](#quick-start) - [Development](#development) - [License](#license)
+
+<img src="docs/images/app-routines.png" alt="Routine Impulse App" width="720" />
 
 </div>
 
@@ -17,6 +22,8 @@ Build and run Routine Impulse locally with Docker.
 
 ### Prerequisites
 - Docker & Docker Compose
+- Java 21 (for local backend development)
+- Node.js and npm (for local frontend development)
 
 ### Clone Repository
 ```bash
