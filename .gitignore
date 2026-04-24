@@ -54,5 +54,5 @@ frontend/.DS_Store
 TODO.txt
 
 # Keys
-backend/src/main/resources/privateKey.pem
-backend/src/main/resources/publicKey.pem
+backend/src/main/resources/jwt/privateKey.pem
+backend/src/main/resources/jwt/publicKey.pem
