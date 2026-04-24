@@ -122,6 +122,7 @@ public class RoutineService {
         }
 
         Routine routine = findRoutineByIdAndUsername(routineId, username);
+        LocalDate routineCreationDate = routine.getCreationDate() != null ? routine.getCreationDate().toLocalDate() : null;
         List<RoutineActivity> activities = em.createQuery(
                 "SELECT a FROM RoutineActivity a WHERE a.routine.id = :routineId AND a.activityDate BETWEEN :from AND :to ORDER BY a.activityDate",
                 RoutineActivity.class)
@@ -135,6 +136,11 @@ public class RoutineService {
 
         LocalDate current = fromDate;
         while (!current.isAfter(toDate)) {
+            if (routineCreationDate != null && current.isBefore(routineCreationDate)) {
+                current = current.plusDays(1);
+                continue;
+            }
+
             boolean scheduled = selectedDays.contains(current.getDayOfWeek());
             if (!scheduled) {
                 current = current.plusDays(1);
@@ -175,6 +181,10 @@ public class RoutineService {
         }
 
         Routine routine = findRoutineByIdAndUsername(routineId, username);
+
+        if (routine.getCreationDate() != null && activityDate.isBefore(routine.getCreationDate().toLocalDate())) {
+            throw new RoutineException(Response.Status.BAD_REQUEST, "INVALID_ACTIVITY_DATE", "Activity date must not be before routine creation date");
+        }
 
         if (!routine.getSchedule().getSelectedDays().contains(activityDate.getDayOfWeek())) {
             throw new RoutineException(Response.Status.BAD_REQUEST, "INVALID_ACTIVITY_DAY", "Routine is not scheduled for the given date");

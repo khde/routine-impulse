@@ -809,13 +809,14 @@ function buildWeekItems(selectedRoutine, weekActivity) {
   const today = getTodayDateString();
   const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const items = [];
+  const creationDate = extractDateFromDateTime(selectedRoutine.creationDate);
 
   for (let index = 0; index < 7; index += 1) {
     const current = new Date(start);
     current.setDate(start.getDate() + index);
     const dateString = toLocalDateString(current);
     const dayKey = DAY_OPTIONS[index];
-    const scheduled = scheduledDays.has(dayKey);
+    const scheduled = scheduledDays.has(dayKey) && (!creationDate || dateString >= creationDate);
     const item = activityByDate.get(dateString);
 
     items.push({
@@ -836,6 +837,7 @@ function buildHeatmapItems(from, to, selectedRoutine, rangeActivity) {
   }
 
   const scheduledDays = new Set(selectedRoutine.selectedDays || []);
+  const creationDate = extractDateFromDateTime(selectedRoutine.creationDate);
   const activityByDate = new Map((rangeActivity || []).map((entry) => [entry.date, entry]));
   const result = [];
 
@@ -846,7 +848,7 @@ function buildHeatmapItems(from, to, selectedRoutine, rangeActivity) {
     const dateString = toLocalDateString(cursor);
     const dayIndex = cursor.getDay() === 0 ? 6 : cursor.getDay() - 1;
     const dayKey = DAY_OPTIONS[dayIndex];
-    const scheduled = scheduledDays.has(dayKey);
+    const scheduled = scheduledDays.has(dayKey) && (!creationDate || dateString >= creationDate);
     const activity = activityByDate.get(dateString);
     const completed = !!activity?.completed;
 
@@ -871,7 +873,6 @@ function buildHeatmapLayout(from, to, heatmapItems) {
       monthLabels: []
     };
   }
-
   const start = startOfWeek(parseLocalDate(from));
   const end = endOfWeek(parseLocalDate(to));
   const totalDays = Math.floor((end - start) / 86400000) + 1;
@@ -979,4 +980,12 @@ function toLocalDateString(date) {
 function parseLocalDate(dateString) {
   const [year, month, day] = dateString.split("-").map(Number);
   return new Date(year, month - 1, day);
+}
+
+function extractDateFromDateTime(dateTimeString) {
+  if (!dateTimeString) {
+    return null;
+  }
+
+  return dateTimeString.split("T")[0];
 }

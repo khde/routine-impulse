@@ -114,6 +114,7 @@ export default function CalendarPage({ apiFetch }) {
       const allActivities = [];
 
       for (const routine of routines) {
+        const routineCreationDate = extractDateFromDateTime(routine.creationDate);
         const response = await apiFetch(
           `${ROUTINE_API_BASE}/${routine.id}/activity?${query.toString()}`,
           { method: "GET" }
@@ -126,11 +127,13 @@ export default function CalendarPage({ apiFetch }) {
         const data = await response.json();
         if (Array.isArray(data)) {
           allActivities.push(
-            ...data.map((activity) => ({
-              ...activity,
-              routineId: routine.id,
-              routineName: routine.name
-            }))
+            ...data
+              .filter((activity) => !routineCreationDate || activity.date >= routineCreationDate)
+              .map((activity) => ({
+                ...activity,
+                routineId: routine.id,
+                routineName: routine.name
+              }))
           );
         }
       }
