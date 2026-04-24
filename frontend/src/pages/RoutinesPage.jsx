@@ -25,6 +25,7 @@ export default function RoutinesPage({ apiFetch }) {
   const [loadingWeekActivity, setLoadingWeekActivity] = useState(false);
   const [status, setStatus] = useState("");
   const [showRoutineModal, setShowRoutineModal] = useState(false);
+  const [routinePendingDelete, setRoutinePendingDelete] = useState(null);
   const [editingRoutineId, setEditingRoutineId] = useState(null);
   const [routineName, setRoutineName] = useState("");
   const [routineDescription, setRoutineDescription] = useState("");
@@ -281,10 +282,25 @@ export default function RoutinesPage({ apiFetch }) {
     }
   }
 
-  async function handleDeleteRoutine(routineId) {
-    if (!window.confirm("Delete this routine?")) {
+  function openDeleteRoutineModal(routine) {
+    setRoutinePendingDelete(routine);
+    setStatus("");
+  }
+
+  function closeDeleteRoutineModal() {
+    if (busyRoutineId !== null) {
       return;
     }
+
+    setRoutinePendingDelete(null);
+  }
+
+  async function handleDeleteRoutine() {
+    if (!routinePendingDelete) {
+      return;
+    }
+
+    const routineId = routinePendingDelete.id;
 
     setBusyRoutineId(routineId);
     setStatus("");
@@ -302,6 +318,7 @@ export default function RoutinesPage({ apiFetch }) {
         setSelectedRoutineId(remaining[0]?.id || null);
       }
 
+      setRoutinePendingDelete(null);
       setStatus("Routine deleted.");
     } catch (error) {
       setStatus(error.message || "Failed to delete routine.");
@@ -406,7 +423,7 @@ export default function RoutinesPage({ apiFetch }) {
                       type="button"
                       className="table-action danger"
                       disabled={busyRoutineId === routine.id}
-                      onClick={() => handleDeleteRoutine(routine.id)}
+                      onClick={() => openDeleteRoutineModal(routine)}
                     >
                       Delete
                     </button>
@@ -672,6 +689,41 @@ export default function RoutinesPage({ apiFetch }) {
                 </button>
               </div>
             </form>
+          </section>
+        </div>
+      )}
+
+      {routinePendingDelete && (
+        <div className="modal-overlay" role="presentation" onClick={closeDeleteRoutineModal}>
+          <section
+            className="modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Delete routine"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h3 className="modal-title">Delete Routine</h3>
+            <p className="info-text">
+              Delete "{routinePendingDelete.name}"? This action cannot be undone.
+            </p>
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="danger-action"
+                disabled={busyRoutineId === routinePendingDelete.id}
+                onClick={handleDeleteRoutine}
+              >
+                {busyRoutineId === routinePendingDelete.id ? "Deleting..." : "Delete"}
+              </button>
+              <button
+                type="button"
+                className="secondary"
+                disabled={busyRoutineId === routinePendingDelete.id}
+                onClick={closeDeleteRoutineModal}
+              >
+                Cancel
+              </button>
+            </div>
           </section>
         </div>
       )}
