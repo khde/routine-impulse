@@ -1,6 +1,9 @@
 <div align="center">
 
-# Routine Impulse
+
+<img src="docs/images/logo.png" alt="Routine Impulse" width="360" />
+
+<hr>
 
 ### Build routines with simple daily impulses.
 
