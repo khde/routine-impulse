@@ -5,9 +5,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.routineimpulse.resource.TestFixtures.uniqueUsername;
 
 import java.util.Map;
-import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
@@ -177,9 +177,5 @@ class AuthResourceTest {
             ))
         .when()
             .post("/api/auth/signup");
-    }
-
-    private String uniqueUsername() {
-        return "t" + UUID.randomUUID().toString().substring(0, 19);
     }
 }

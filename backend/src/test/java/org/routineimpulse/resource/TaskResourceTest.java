@@ -5,10 +5,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.routineimpulse.resource.TestFixtures.uniqueUsername;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
@@ -179,9 +179,5 @@ class TaskResourceTest {
             .post("/api/task")
         .then()
             .statusCode(400);
-    }
-
-    private String uniqueUsername() {
-        return "t" + UUID.randomUUID().toString().substring(0, 19);
     }
 }

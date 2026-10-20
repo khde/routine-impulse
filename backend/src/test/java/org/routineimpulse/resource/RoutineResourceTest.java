@@ -5,12 +5,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.routineimpulse.resource.TestFixtures.uniqueUsername;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
@@ -291,9 +291,5 @@ class RoutineResourceTest {
             candidate = candidate.plusDays(1);
         } while (candidate.getDayOfWeek() == scheduledDay);
         return candidate;
-    }
-
-    private String uniqueUsername() {
-        return "t" + UUID.randomUUID().toString().substring(0, 19);
     }
 }
