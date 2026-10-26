@@ -24,6 +24,7 @@ export default function RoutinesPage({ apiFetch }) {
   const [loadingRangeActivity, setLoadingRangeActivity] = useState(false);
   const [loadingWeekActivity, setLoadingWeekActivity] = useState(false);
   const [status, setStatus] = useState("");
+  const [routineModalError, setRoutineModalError] = useState("");
   const [showRoutineModal, setShowRoutineModal] = useState(false);
   const [routinePendingDelete, setRoutinePendingDelete] = useState(null);
   const [editingRoutineId, setEditingRoutineId] = useState(null);
@@ -202,6 +203,7 @@ export default function RoutinesPage({ apiFetch }) {
     setRoutineName("");
     setRoutineDescription("");
     setSelectedDays([]);
+    setRoutineModalError("");
     setShowRoutineModal(true);
     setStatus("");
   }
@@ -211,6 +213,7 @@ export default function RoutinesPage({ apiFetch }) {
     setRoutineName(routine.name || "");
     setRoutineDescription(routine.description || "");
     setSelectedDays(Array.isArray(routine.selectedDays) ? routine.selectedDays : []);
+    setRoutineModalError("");
     setShowRoutineModal(true);
     setStatus("");
   }
@@ -226,16 +229,17 @@ export default function RoutinesPage({ apiFetch }) {
 
     const trimmedName = routineName.trim();
     if (!trimmedName) {
-      setStatus("Routine name is required.");
+      setRoutineModalError("Routine name is required.");
       return;
     }
 
     if (selectedDays.length === 0) {
-      setStatus("Select at least one day for the routine.");
+      setRoutineModalError("Select at least one day for the routine.");
       return;
     }
 
     setSavingRoutine(true);
+    setRoutineModalError("");
     setStatus("");
 
     try {
@@ -276,7 +280,7 @@ export default function RoutinesPage({ apiFetch }) {
 
       setShowRoutineModal(false);
     } catch (error) {
-      setStatus(error.message || "Failed to save routine.");
+      setRoutineModalError(error.message || "Failed to save routine.");
     } finally {
       setSavingRoutine(false);
     }
@@ -641,7 +645,10 @@ export default function RoutinesPage({ apiFetch }) {
                 <input
                   type="text"
                   value={routineName}
-                  onChange={(event) => setRoutineName(event.target.value)}
+                  onChange={(event) => {
+                    setRoutineName(event.target.value);
+                    setRoutineModalError("");
+                  }}
                   maxLength={255}
                   required
                   autoFocus
@@ -654,7 +661,10 @@ export default function RoutinesPage({ apiFetch }) {
                 <textarea
                   className="routine-description-input"
                   value={routineDescription}
-                  onChange={(event) => setRoutineDescription(event.target.value)}
+                  onChange={(event) => {
+                    setRoutineDescription(event.target.value);
+                    setRoutineModalError("");
+                  }}
                   maxLength={255}
                   disabled={savingRoutine}
                 />
@@ -668,13 +678,18 @@ export default function RoutinesPage({ apiFetch }) {
                       <input
                         type="checkbox"
                         checked={selectedDays.includes(day)}
-                        onChange={() => toggleDay(day)}
+                        onChange={() => {
+                          toggleDay(day);
+                          setRoutineModalError("");
+                        }}
                       />
                       <span>{day.slice(0, 3)}</span>
                     </label>
                   ))}
                 </div>
               </fieldset>
+
+              {routineModalError && <p className="status routine-modal-error" role="alert">{routineModalError}</p>}
 
               <div className="modal-actions">
                 <button type="submit" className="primary" disabled={savingRoutine}>

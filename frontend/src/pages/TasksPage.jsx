@@ -8,6 +8,7 @@ export default function TasksPage({ apiFetch }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("");
+  const [taskModalError, setTaskModalError] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [newDescription, setNewDescription] = useState("");
@@ -57,11 +58,12 @@ export default function TasksPage({ apiFetch }) {
     const description = newDescription.trim();
 
     if (!description) {
-      setStatus("Task description is required.");
+      setTaskModalError("Task description is required.");
       return;
     }
 
     setSubmitting(true);
+    setTaskModalError("");
     setStatus("");
 
     try {
@@ -86,7 +88,7 @@ export default function TasksPage({ apiFetch }) {
       setShowCreateModal(false);
       setStatus("Task created.");
     } catch (error) {
-      setStatus(error.message || "Failed to create task.");
+      setTaskModalError(error.message || "Failed to create task.");
     } finally {
       setSubmitting(false);
     }
@@ -124,6 +126,7 @@ export default function TasksPage({ apiFetch }) {
     setEditTaskId(task.id);
     setEditDescription(task.description || "");
     setEditDueDate(toDateTimeLocalValue(task.dueDate));
+    setTaskModalError("");
     setShowEditModal(true);
     setStatus("");
   }
@@ -134,6 +137,7 @@ export default function TasksPage({ apiFetch }) {
     }
 
     setShowEditModal(false);
+    setTaskModalError("");
     setEditTaskId(null);
     setEditDescription("");
     setEditDueDate("");
@@ -143,28 +147,29 @@ export default function TasksPage({ apiFetch }) {
     event.preventDefault();
 
     if (editTaskId == null) {
-      setStatus("No task selected for editing.");
+      setTaskModalError("No task selected for editing.");
       return;
     }
 
     const description = editDescription.trim();
     if (!description) {
-      setStatus("Task description is required.");
+      setTaskModalError("Task description is required.");
       return;
     }
 
     const taskToEdit = tasks.find((task) => task.id === editTaskId);
     if (!taskToEdit) {
-      setStatus("Task not found.");
+      setTaskModalError("Task not found.");
       return;
     }
 
     if (taskToEdit.completed) {
-      setStatus("Only open tasks can be edited.");
+      setTaskModalError("Only open tasks can be edited.");
       return;
     }
 
     setEditing(true);
+    setTaskModalError("");
     setStatus("");
 
     try {
@@ -186,7 +191,7 @@ export default function TasksPage({ apiFetch }) {
       closeEditModal();
       setStatus("Task updated.");
     } catch (error) {
-      setStatus(error.message || "Failed to update task.");
+      setTaskModalError(error.message || "Failed to update task.");
     } finally {
       setEditing(false);
     }
@@ -224,6 +229,7 @@ export default function TasksPage({ apiFetch }) {
           type="button"
           className="tasks-new-button"
           onClick={() => {
+            setTaskModalError("");
             setShowCreateModal(true);
             setStatus("");
           }}
@@ -350,7 +356,10 @@ export default function TasksPage({ apiFetch }) {
                 <input
                   type="text"
                   value={newDescription}
-                  onChange={(event) => setNewDescription(event.target.value)}
+                  onChange={(event) => {
+                    setNewDescription(event.target.value);
+                    setTaskModalError("");
+                  }}
                   maxLength={255}
                   placeholder="What do you want to do?"
                   autoFocus
@@ -362,10 +371,14 @@ export default function TasksPage({ apiFetch }) {
                 <input
                   type="datetime-local"
                   value={newDueDate}
-                  onChange={(event) => setNewDueDate(event.target.value)}
+                  onChange={(event) => {
+                    setNewDueDate(event.target.value);
+                    setTaskModalError("");
+                  }}
                   disabled={submitting}
                 />
               </label>
+              {taskModalError && <p className="status task-modal-error" role="alert">{taskModalError}</p>}
               <div className="modal-actions">
                 <button type="submit" className="primary" disabled={submitting}>
                   {submitting ? "Saving..." : "Save Task"}
@@ -374,7 +387,10 @@ export default function TasksPage({ apiFetch }) {
                   type="button"
                   className="secondary"
                   disabled={submitting}
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setTaskModalError("");
+                  }}
                 >
                   Cancel
                 </button>
@@ -400,7 +416,10 @@ export default function TasksPage({ apiFetch }) {
                 <input
                   type="text"
                   value={editDescription}
-                  onChange={(event) => setEditDescription(event.target.value)}
+                  onChange={(event) => {
+                    setEditDescription(event.target.value);
+                    setTaskModalError("");
+                  }}
                   maxLength={255}
                   placeholder="What do you want to do?"
                   autoFocus
@@ -412,10 +431,14 @@ export default function TasksPage({ apiFetch }) {
                 <input
                   type="datetime-local"
                   value={editDueDate}
-                  onChange={(event) => setEditDueDate(event.target.value)}
+                  onChange={(event) => {
+                    setEditDueDate(event.target.value);
+                    setTaskModalError("");
+                  }}
                   disabled={editing}
                 />
               </label>
+              {taskModalError && <p className="status task-modal-error" role="alert">{taskModalError}</p>}
               <div className="modal-actions">
                 <button type="submit" className="primary" disabled={editing}>
                   {editing ? "Saving..." : "Save Changes"}
