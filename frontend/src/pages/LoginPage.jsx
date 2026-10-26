@@ -30,11 +30,6 @@ export default function LoginPage({ loggedIn, setLoggedIn, apiFetch }) {
       return;
     }
 
-    if (password.length < 8) {
-      setStatus("Password must be at least 8 characters.");
-      return;
-    }
-
     setLoading(true);
     setStatus("Logging in...");
 
@@ -86,7 +81,6 @@ export default function LoginPage({ loggedIn, setLoggedIn, apiFetch }) {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             required
-            minLength={8}
             disabled={loading}
           />
         </label>
