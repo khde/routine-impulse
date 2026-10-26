@@ -5,11 +5,11 @@ export default function StartPage({ loggedIn }) {
   return (
     <PageShell
       title="Routine Impulse"
-      subtitle="A simple routine tracker for daily focus and consistency."
+      subtitle="Small routines. Steady progress."
       wide
+      className="start-page"
     >
-
-      <div className="action-row">
+      <div className={loggedIn ? "action-row single-action" : "action-row"}>
         {loggedIn ? (
           <Link className="link-button primary-link" to="/dashboard">
             Go to Dashboard
@@ -20,7 +20,7 @@ export default function StartPage({ loggedIn }) {
               Login
             </Link>
             <Link className="link-button secondary-link" to="/signup">
-              Signup
+              Create account
             </Link>
           </>
         )}
