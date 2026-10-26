@@ -10,7 +10,7 @@ export default function SignupPage({ loggedIn, setLoggedIn, apiFetch }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [status, setStatus] = useState("Create your account.");
+  const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -142,7 +142,7 @@ export default function SignupPage({ loggedIn, setLoggedIn, apiFetch }) {
         </button>
       </form>
 
-      <StatusMessage message={status} />
+      {status && <StatusMessage message={status} />}
 
       <p className="small-link">
         <Link to="/login">Already have an account? Login</Link>

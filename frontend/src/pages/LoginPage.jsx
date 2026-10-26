@@ -8,7 +8,7 @@ import { parseError } from "../utils/parseError";
 export default function LoginPage({ loggedIn, setLoggedIn, apiFetch }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [status, setStatus] = useState("Enter your login credentials.");
+  const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -90,7 +90,7 @@ export default function LoginPage({ loggedIn, setLoggedIn, apiFetch }) {
         </button>
       </form>
 
-      <StatusMessage message={status} />
+      {status && <StatusMessage message={status} />}
 
       <p className="small-link">
         <Link to="/signup">No account? Signup</Link>
