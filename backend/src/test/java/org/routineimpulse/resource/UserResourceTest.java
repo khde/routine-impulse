@@ -11,11 +11,13 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 
 @QuarkusTest
+@QuarkusTestResource(JwtKeyTestResource.class)
 class UserResourceTest {
 
     @Test
