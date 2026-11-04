@@ -28,7 +28,7 @@ import org.routineimpulse.dto.RoutineUpdateRequest;
 import org.routineimpulse.service.RoutineService;
 import org.routineimpulse.service.AuthService;
 
-@Path("/routine")
+@Path("/api/routine")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class RoutineResource {

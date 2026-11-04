@@ -22,7 +22,7 @@ import org.routineimpulse.dto.TaskUpdateRequest;
 import org.routineimpulse.service.TaskService;
 import org.routineimpulse.service.AuthService;
 
-@Path("/task")
+@Path("/api/task")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class TaskResource {
