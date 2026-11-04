@@ -9,9 +9,8 @@ services:
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
       DB_NAME: ${DB_NAME}
-    secrets:
-      - jwt_private_key
-      - jwt_public_key
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
     depends_on:
       - db
 
@@ -26,9 +25,3 @@ services:
 
 volumes:
   postgres_data:
-
-secrets:
-  jwt_private_key:
-    file: ${JWT_PRIVATE_KEY_FILE}
-  jwt_public_key:
-    file: ${JWT_PUBLIC_KEY_FILE}

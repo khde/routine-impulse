@@ -47,15 +47,14 @@ docker build -t routine-impulse .
 ```bash
 cp .env.template .env
 ```
-2. Configure the `.env` file with database settings and JWT key paths.
+2. Configure the `.env` file with database settings.
 
-3. Generate JWT keys:
-These commands create a private/public key pair in `.secrets/jwt`.
+3. Generate the JWT environment values:
 
 ```bash
-mkdir -p .secrets/jwt
-openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out .secrets/jwt/privateKey.pem
-openssl rsa -pubout -in .secrets/jwt/privateKey.pem -out .secrets/jwt/publicKey.pem
+JWT_PRIVATE_PEM=$(openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048)
+echo "JWT_PRIVATE_KEY=$(printf '%s' "$JWT_PRIVATE_PEM" | openssl pkcs8 -topk8 -nocrypt -outform DER | base64 | tr -d '\r\n')"
+echo "JWT_PUBLIC_KEY=$(printf '%s' "$JWT_PRIVATE_PEM" | openssl pkey -pubout -outform DER | base64 | tr -d '\r\n')"
 ```
 
 ### Run with Docker Compose
@@ -83,8 +82,7 @@ cd backend
 ./mvnw quarkus:dev
 ```
 
-Place `.env` in `backend/`.
-Place JWT keys in `backend/src/main/resources/jwt`.
+For local development, place an `.env` file containing the database settings and JWT key values in `backend/`.
 
 Frontend:
 ```bash
