@@ -29,8 +29,15 @@ class AuthResourceTest {
 
     @Test
     void signupCanBeDisabledThroughDatabaseSetting() {
-        setSignupEnabled(false);
+        String username = uniqueUsername();
+        String password = "test-password-123";
+        Response signup = signup(username, username + "test@example.test", password);
+        signup.then().statusCode(201);
+        String accessToken = signup.getCookie("access_token");
+
         try {
+            setSignupEnabled(false);
+
             given()
                 .contentType(ContentType.JSON)
                 .body(Map.of(
@@ -43,8 +50,22 @@ class AuthResourceTest {
             .then()
                 .statusCode(403)
                 .body("message", equalTo("New account registration is currently disabled"));
+
+            given()
+                .contentType(ContentType.JSON)
+                .body(Map.of("username", username, "password", password))
+            .when()
+                .post("/api/auth/login")
+            .then()
+                .statusCode(204);
         } finally {
             setSignupEnabled(true);
+            given()
+                .cookie("access_token", accessToken)
+            .when()
+                .delete("/api/auth/delete-account")
+            .then()
+                .statusCode(204);
         }
     }
 
