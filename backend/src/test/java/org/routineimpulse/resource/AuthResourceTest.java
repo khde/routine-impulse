@@ -10,14 +10,43 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+
+import org.routineimpulse.model.ApplicationSetting;
 
 @QuarkusTest
 @QuarkusTestResource(JwtKeyTestResource.class)
 class AuthResourceTest {
+
+    @Inject
+    EntityManager em;
+
+    @Test
+    void signupCanBeDisabledThroughDatabaseSetting() {
+        setSignupEnabled(false);
+        try {
+            given()
+                .contentType(ContentType.JSON)
+                .body(Map.of(
+                    "username", uniqueUsername(),
+                    "email", "disabled-signup@example.test",
+                    "password", "test-password-123"
+                ))
+            .when()
+                .post("/api/auth/signup")
+            .then()
+                .statusCode(403)
+                .body("message", equalTo("New account registration is currently disabled"));
+        } finally {
+            setSignupEnabled(true);
+        }
+    }
 
     @Test
     void signupCreatesSessionAndDeleteAccountRemovesUser() {
@@ -298,5 +327,12 @@ class AuthResourceTest {
             ))
         .when()
             .post("/api/auth/signup");
+    }
+
+    private void setSignupEnabled(boolean enabled) {
+        QuarkusTransaction.requiringNew().run(() -> {
+            ApplicationSetting setting = em.find(ApplicationSetting.class, "signup_enabled");
+            setting.setValue(Boolean.toString(enabled));
+        });
     }
 }

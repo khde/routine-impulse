@@ -44,6 +44,9 @@ public class AuthService {
     UserService userService;
 
     @Inject
+    ApplicationSettingsService settingsService;
+
+    @Inject
     SecurityContext securityContext;
 
     @Inject
@@ -54,6 +57,14 @@ public class AuthService {
 
     @Transactional
     public LoginResponse register(SignupRequest request) {
+        if (!settingsService.isSignupEnabled()) {
+            throw new AuthException(
+                Response.Status.FORBIDDEN,
+                "SIGNUP_DISABLED",
+                "New account registration is currently disabled"
+            );
+        }
+
         String normalizedUsername = request.getUsername().toLowerCase().trim();
         Log.infof("New Registration: %s", normalizedUsername);
 
