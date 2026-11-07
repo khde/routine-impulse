@@ -3,12 +3,18 @@ export function createApiClient({ onAuthFailure, authBasePath = "/api/auth" }) {
 
   async function refreshAccessToken() {
     if (!refreshPromise) {
-      refreshPromise = fetch(`${authBasePath}/refresh`, {
-        method: "POST",
-        credentials: "include"
-      })
+      const sendRefreshRequest = () => fetch(`${authBasePath}/refresh`, {
+          method: "POST",
+          credentials: "include"
+        })
         .then((response) => response.ok)
-        .catch(() => false)
+        .catch(() => false);
+
+      const refreshRequest = typeof navigator !== "undefined" && navigator.locks
+        ? navigator.locks.request("routine-impulse-session-refresh", sendRefreshRequest)
+        : sendRefreshRequest();
+
+      refreshPromise = Promise.resolve(refreshRequest)
         .finally(() => {
           refreshPromise = null;
         });

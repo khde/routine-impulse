@@ -3,6 +3,7 @@ package org.routineimpulse.service;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.security.SecureRandom;
@@ -13,6 +14,7 @@ import java.security.NoSuchAlgorithmException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -23,11 +25,14 @@ import io.quarkus.logging.Log;
 
 import org.routineimpulse.dto.LoginRequest;
 import org.routineimpulse.dto.LoginResponse;
+import org.routineimpulse.dto.SessionResponse;
+import org.routineimpulse.dto.SessionTokens;
 import org.routineimpulse.exception.AuthException;
-import org.routineimpulse.model.RefreshToken;
+import org.routineimpulse.model.SessionCredential;
 import org.routineimpulse.dto.ChangePasswordRequest;
 import org.routineimpulse.dto.SignupRequest;
 import org.routineimpulse.model.User;
+import org.routineimpulse.model.UserSession;
 
 @ApplicationScoped
 public class AuthService {
@@ -98,82 +103,152 @@ public class AuthService {
     }
 
     @Transactional
-    public String createRefreshToken(String username) {
+    public SessionTokens createSession(String username, String userAgent) {
         User user = userService.getUserByUsername(username);
         if (user == null || user.isLocked()) {
             throw new AuthException("INVALID_CREDENTIALS", "Invalid credentials");
         }
 
-        em.createQuery("UPDATE RefreshToken r SET r.revoked = true WHERE r.userId = :userId")
+        Instant now = Instant.now();
+        em.createQuery("DELETE FROM SessionCredential c WHERE c.sessionId IN " +
+                "(SELECT s.id FROM UserSession s WHERE s.userId = :userId AND (s.revoked = true OR s.expiresAt <= :now))")
             .setParameter("userId", user.getId())
+            .setParameter("now", now)
+            .executeUpdate();
+        em.createQuery("DELETE FROM UserSession s WHERE s.userId = :userId AND (s.revoked = true OR s.expiresAt <= :now)")
+            .setParameter("userId", user.getId())
+            .setParameter("now", now)
             .executeUpdate();
 
-        String refreshTokenValue = generateRefreshTokenValue();
+        String sessionToken = generateSessionTokenValue();
+        UserSession session = new UserSession();
+        session.setUserId(user.getId());
+        session.setUserAgent(limitUserAgent(userAgent));
+        session.setExpiresAt(now.plus(Duration.ofDays(7)));
+        em.persist(session);
+        em.flush();
 
-        RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setUserId(user.getId());
-        refreshToken.setToken(hashRefreshToken(refreshTokenValue));
-        refreshToken.setExpiresAt(Instant.now().plus(Duration.ofDays(7)));
-        refreshToken.setRevoked(false);
-        em.persist(refreshToken);
+        SessionCredential credential = new SessionCredential();
+        credential.setSessionId(session.getId());
+        credential.setTokenHash(hashSessionToken(sessionToken));
+        credential.setCreatedAt(now);
+        em.persist(credential);
 
-        return refreshTokenValue;
+        return createSessionTokens(user, session, sessionToken);
     }
 
-    @Transactional
-    public String createAccessToken(String refreshToken) {
-        if (refreshToken == null || refreshToken.isBlank()) {
-            throw new AuthException("INVALID_REFRESH_TOKEN", "Invalid refresh token");
+    @Transactional(dontRollbackOn = AuthException.class)
+    public SessionTokens rotateSessionToken(String sessionToken) {
+        if (sessionToken == null || sessionToken.isBlank()) {
+            throw invalidSessionToken();
         }
 
-        String refreshTokenHash = hashRefreshToken(refreshToken);
-
-        Optional<RefreshToken> storedTokenOptional = em.createNamedQuery("RefreshToken.findByToken", RefreshToken.class)
-            .setParameter("token", refreshTokenHash)
+        Optional<SessionCredential> credentialOptional = em
+            .createNamedQuery("SessionCredential.findByTokenHash", SessionCredential.class)
+            .setParameter("tokenHash", hashSessionToken(sessionToken))
+            .setLockMode(LockModeType.PESSIMISTIC_WRITE)
             .getResultStream()
             .findFirst();
 
-        if (storedTokenOptional.isEmpty()) {
-            Log.warn("Refresh failed: refresh token is invalid");
-            throw new AuthException("INVALID_REFRESH_TOKEN", "Invalid refresh token");
+        if (credentialOptional.isEmpty()) {
+            Log.warn("Session refresh failed: credential is invalid");
+            throw invalidSessionToken();
         }
 
-        RefreshToken storedToken = storedTokenOptional.get();
-        if (storedToken.isRevoked() || storedToken.isExpired()) {
-            Log.warn("Refresh failed: refresh token is invalid, revoked or expired");
-            throw new AuthException("INVALID_REFRESH_TOKEN", "Invalid refresh token");
+        SessionCredential credential = credentialOptional.get();
+        UserSession session = em.find(UserSession.class, credential.getSessionId(), LockModeType.PESSIMISTIC_WRITE);
+        if (credential.getConsumedAt() != null) {
+            if (session != null) {
+                session.setRevoked(true);
+            }
+            Log.warn("Session refresh failed: previously rotated credential was reused");
+            throw invalidSessionToken();
         }
 
-        User user = em.find(User.class, storedToken.getUserId());
+        if (session == null || session.isRevoked() || !session.getExpiresAt().isAfter(Instant.now())) {
+            Log.warn("Session refresh failed: session is revoked or expired");
+            throw invalidSessionToken();
+        }
+
+        User user = em.find(User.class, session.getUserId());
         if (user == null || user.isLocked()) {
-            Log.warn("Refresh failed: user not found or locked");
-            storedToken.setRevoked(true);
-            throw new AuthException("INVALID_REFRESH_TOKEN", "Invalid refresh token");
+            session.setRevoked(true);
+            throw invalidSessionToken();
         }
 
-        return Jwt.issuer(jwtIssuer)
-            .upn(user.getUsername())
-            .groups(Set.of(DEFAULT_USER_ROLE))
-            .expiresIn(Duration.ofMinutes(15))
-            .sign();
+        Instant now = Instant.now();
+        credential.setConsumedAt(now);
+        session.setLastUsedAt(now);
+        String nextSessionToken = generateSessionTokenValue();
+        SessionCredential nextCredential = new SessionCredential();
+        nextCredential.setSessionId(session.getId());
+        nextCredential.setTokenHash(hashSessionToken(nextSessionToken));
+        nextCredential.setCreatedAt(now);
+        em.persist(nextCredential);
+
+        return createSessionTokens(user, session, nextSessionToken);
     }
 
     @Transactional
-    public void logout(String refreshToken) {
-        if (refreshToken == null || refreshToken.isBlank()) {
+    public void logoutSession(String sessionToken) {
+        if (sessionToken == null || sessionToken.isBlank()) {
             return;
         }
 
-        String refreshTokenHash = hashRefreshToken(refreshToken);
-
-        em.createNamedQuery("RefreshToken.findByToken", RefreshToken.class)
-            .setParameter("token", refreshTokenHash)
+        em.createNamedQuery("SessionCredential.findByTokenHash", SessionCredential.class)
+            .setParameter("tokenHash", hashSessionToken(sessionToken))
             .getResultStream()
             .findFirst()
-            .ifPresent(token -> {
-                token.setRevoked(true);
-                Log.infof("Refresh token revoked during logout for userId=%s", token.getUserId());
+            .ifPresent(credential -> {
+                UserSession session = em.find(UserSession.class, credential.getSessionId());
+                if (session != null) {
+                    session.setRevoked(true);
+                    Log.infof("Session revoked during logout for sessionId=%s", session.getId());
+                }
             });
+    }
+
+    public List<SessionResponse> getSessions(String username, String currentSessionToken) {
+        User user = userService.getUserByUsername(username);
+        if (user == null) {
+            throw new AuthException("AUTHENTICATION_REQUIRED", "Authentication required");
+        }
+
+        Long currentSessionId = findSessionIdForToken(currentSessionToken);
+        Instant now = Instant.now();
+        return em.createQuery(
+                "SELECT s FROM UserSession s WHERE s.userId = :userId AND s.revoked = false " +
+                    "AND s.expiresAt > :now ORDER BY s.createdAt DESC", UserSession.class)
+            .setParameter("userId", user.getId())
+            .setParameter("now", now)
+            .getResultList()
+            .stream()
+            .map(session -> toSessionResponse(session, session.getId().equals(currentSessionId)))
+            .toList();
+    }
+
+    @Transactional
+    public Boolean revokeSession(String username, Long sessionId, String currentSessionToken) {
+        User user = userService.getUserByUsername(username);
+        if (user == null) {
+            throw new AuthException("AUTHENTICATION_REQUIRED", "Authentication required");
+        }
+
+        Optional<UserSession> sessionOptional = em.createQuery(
+                "SELECT s FROM UserSession s WHERE s.id = :sessionId AND s.userId = :userId " +
+                    "AND s.revoked = false", UserSession.class)
+            .setParameter("sessionId", sessionId)
+            .setParameter("userId", user.getId())
+            .getResultStream()
+            .findFirst();
+
+        if (sessionOptional.isEmpty()) {
+            return null;
+        }
+
+        UserSession session = sessionOptional.get();
+        session.setRevoked(true);
+        return session.getId().equals(findSessionIdForToken(currentSessionToken));
     }
 
     @Transactional
@@ -196,7 +271,7 @@ public class AuthService {
 
         user.setPassword(BcryptUtil.bcryptHash(request.getNewPassword()));
 
-        em.createQuery("UPDATE RefreshToken r SET r.revoked = true WHERE r.userId = :userId")
+        em.createQuery("UPDATE UserSession s SET s.revoked = true WHERE s.userId = :userId")
             .setParameter("userId", user.getId())
             .executeUpdate();
 
@@ -212,7 +287,11 @@ public class AuthService {
             throw new AuthException("AUTHENTICATION_REQUIRED", "Authentication required");
         }
 
-        em.createQuery("DELETE FROM RefreshToken r WHERE r.userId = :userId")
+        em.createQuery("DELETE FROM SessionCredential c WHERE c.sessionId IN " +
+                "(SELECT s.id FROM UserSession s WHERE s.userId = :userId)")
+            .setParameter("userId", user.getId())
+            .executeUpdate();
+        em.createQuery("DELETE FROM UserSession s WHERE s.userId = :userId")
             .setParameter("userId", user.getId())
             .executeUpdate();
 
@@ -221,20 +300,64 @@ public class AuthService {
         Log.infof("User account deleted: %s", username);
     }
 
-    private String generateRefreshTokenValue() {
+    private String generateSessionTokenValue() {
         byte[] randomBytes = new byte[64];
         SECURE_RANDOM.nextBytes(randomBytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
     }
 
-    private String hashRefreshToken(String refreshToken) {
+    private String hashSessionToken(String sessionToken) {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
-            byte[] hashed = messageDigest.digest(refreshToken.getBytes(StandardCharsets.UTF_8));
+            byte[] hashed = messageDigest.digest(sessionToken.getBytes(StandardCharsets.UTF_8));
             return Base64.getUrlEncoder().withoutPadding().encodeToString(hashed);
         } catch (NoSuchAlgorithmException e) {
-            throw new AuthException(Response.Status.INTERNAL_SERVER_ERROR, "TOKEN_HASHING_UNAVAILABLE", "Refresh token hashing algorithm is not available");
+            throw new AuthException(Response.Status.INTERNAL_SERVER_ERROR, "TOKEN_HASHING_UNAVAILABLE", "Session token hashing algorithm is not available");
         }
+    }
+
+    private SessionTokens createSessionTokens(User user, UserSession session, String sessionToken) {
+        String accessToken = Jwt.issuer(jwtIssuer)
+            .upn(user.getUsername())
+            .groups(Set.of(DEFAULT_USER_ROLE))
+            .claim("sid", session.getId())
+            .expiresIn(Duration.ofMinutes(15))
+            .sign();
+        return new SessionTokens(accessToken, sessionToken);
+    }
+
+    private SessionResponse toSessionResponse(UserSession session, boolean current) {
+        SessionResponse response = new SessionResponse();
+        response.setId(session.getId());
+        response.setUserAgent(session.getUserAgent());
+        response.setCreatedAt(session.getCreatedAt());
+        response.setLastUsedAt(session.getLastUsedAt());
+        response.setExpiresAt(session.getExpiresAt());
+        response.setCurrent(current);
+        return response;
+    }
+
+    private Long findSessionIdForToken(String sessionToken) {
+        if (sessionToken == null || sessionToken.isBlank()) {
+            return null;
+        }
+        return em.createNamedQuery("SessionCredential.findByTokenHash", SessionCredential.class)
+            .setParameter("tokenHash", hashSessionToken(sessionToken))
+            .getResultStream()
+            .findFirst()
+            .map(SessionCredential::getSessionId)
+            .orElse(null);
+    }
+
+    private AuthException invalidSessionToken() {
+        return new AuthException("INVALID_SESSION_TOKEN", "Session is invalid or expired");
+    }
+
+    private String limitUserAgent(String userAgent) {
+        if (userAgent == null) {
+            return null;
+        }
+        return userAgent.length() <= 512 ? userAgent : userAgent.substring(0, 512);
     }
 
     public String getCurrentUsername() {

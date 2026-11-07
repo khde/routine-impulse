@@ -4,16 +4,16 @@ import java.time.Instant;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import jakarta.persistence.NamedQuery;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "refresh_tokens")
-@NamedQuery(name = "RefreshToken.findByToken", query = "SELECT r FROM RefreshToken r WHERE r.token = :token")
-public class RefreshToken {
+@Table(name = "user_sessions")
+public class UserSession {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,8 +21,14 @@ public class RefreshToken {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(nullable = false, unique = true, length = 512)
-    private String token;
+    @Column(name = "user_agent", length = 512)
+    private String userAgent;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @Column(name = "last_used_at", nullable = false)
+    private Instant lastUsedAt;
 
     @Column(name = "expires_at", nullable = false)
     private Instant expiresAt;
@@ -30,12 +36,15 @@ public class RefreshToken {
     @Column(nullable = false)
     private boolean revoked;
 
-    public Long getId() {
-        return id;
+    @PrePersist
+    protected void onCreate() {
+        Instant now = Instant.now();
+        createdAt = now;
+        lastUsedAt = now;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public Long getId() {
+        return id;
     }
 
     public Long getUserId() {
@@ -46,12 +55,24 @@ public class RefreshToken {
         this.userId = userId;
     }
 
-    public String getToken() {
-        return token;
+    public String getUserAgent() {
+        return userAgent;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getLastUsedAt() {
+        return lastUsedAt;
+    }
+
+    public void setLastUsedAt(Instant lastUsedAt) {
+        this.lastUsedAt = lastUsedAt;
     }
 
     public Instant getExpiresAt() {
@@ -68,9 +89,5 @@ public class RefreshToken {
 
     public void setRevoked(boolean revoked) {
         this.revoked = revoked;
-    }
-
-    public boolean isExpired() {
-        return expiresAt != null && Instant.now().isAfter(expiresAt);
     }
 }

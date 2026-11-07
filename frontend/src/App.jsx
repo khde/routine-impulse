@@ -112,7 +112,7 @@ export default function App() {
           path="/settings"
           element={
             <ProtectedRoute loggedIn={loggedIn}>
-              <SettingsPage apiFetch={apiFetch} />
+              <SettingsPage apiFetch={apiFetch} setLoggedIn={setLoggedIn} />
             </ProtectedRoute>
           }
         />

@@ -4,7 +4,6 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.routineimpulse.resource.TestFixtures.uniqueUsername;
 
 import java.util.Map;
@@ -34,7 +33,7 @@ class AuthResourceTest {
         String accessToken = signup.getCookie("access_token");
         assertNotNull(accessToken);
         assertFalse(accessToken.isBlank());
-        assertNotNull(signup.getCookie("refresh_token"));
+        assertNotNull(signup.getCookie("session_token"));
 
         signup(username, email, password).then()
             .statusCode(400);
@@ -98,30 +97,32 @@ class AuthResourceTest {
     }
 
     @Test
-    void refreshIssuesUsableAccessTokenWithoutRotatingRefreshToken() {
+    void refreshRotatesSessionCredentialAndRejectsReuse() {
         String username = uniqueUsername();
         String email = username + "test@example.test";
         String password = "test-password-123";
         Response signup = signup(username, email, password);
         signup.then().statusCode(201);
 
-        String refreshToken = signup.getCookie("refresh_token");
+        String sessionToken = signup.getCookie("session_token");
         String signupAccessToken = signup.getCookie("access_token");
-        assertNotNull(refreshToken);
+        assertNotNull(sessionToken);
         assertNotNull(signupAccessToken);
 
         try {
             Response refresh = given()
                 .contentType(ContentType.JSON)
-                .cookie("refresh_token", refreshToken)
+                .cookie("session_token", sessionToken)
             .when()
                 .post("/api/auth/refresh");
             refresh.then().statusCode(204);
 
             String refreshedAccessToken = refresh.getCookie("access_token");
+            String rotatedSessionToken = refresh.getCookie("session_token");
             assertNotNull(refreshedAccessToken);
+            assertNotNull(rotatedSessionToken);
+            assertFalse(sessionToken.equals(rotatedSessionToken));
             assertFalse(refreshedAccessToken.isBlank());
-            assertNull(refresh.getCookie("refresh_token"));
 
             given()
                 .cookie("access_token", refreshedAccessToken)
@@ -133,11 +134,19 @@ class AuthResourceTest {
 
             given()
                 .contentType(ContentType.JSON)
-                .cookie("refresh_token", refreshToken)
+                .cookie("session_token", sessionToken)
             .when()
                 .post("/api/auth/refresh")
             .then()
-                .statusCode(204);
+                .statusCode(401);
+
+            given()
+                .contentType(ContentType.JSON)
+                .cookie("session_token", rotatedSessionToken)
+            .when()
+                .post("/api/auth/refresh")
+            .then()
+                .statusCode(401);
         } finally {
             given()
                 .cookie("access_token", signupAccessToken)
@@ -162,11 +171,121 @@ class AuthResourceTest {
     void refreshRejectsInvalidRefreshToken() {
         given()
             .contentType(ContentType.JSON)
-            .cookie("refresh_token", "invalid-refresh-token")
+            .cookie("session_token", "invalid-session-token")
         .when()
             .post("/api/auth/refresh")
         .then()
             .statusCode(401);
+    }
+
+    @Test
+    void logoutRevokesSessionCredential() {
+        String username = uniqueUsername();
+        Response signup = signup(username, username + "test@example.test", "test-password-123");
+        signup.then().statusCode(201);
+
+        String sessionToken = signup.getCookie("session_token");
+        String accessToken = signup.getCookie("access_token");
+        assertNotNull(sessionToken);
+        assertNotNull(accessToken);
+
+        try {
+            given()
+                .contentType(ContentType.JSON)
+                .cookie("session_token", sessionToken)
+            .when()
+                .post("/api/auth/logout")
+            .then()
+                .statusCode(204);
+
+            given()
+                .contentType(ContentType.JSON)
+                .cookie("session_token", sessionToken)
+            .when()
+                .post("/api/auth/refresh")
+            .then()
+                .statusCode(401);
+
+            given()
+                .cookie("access_token", accessToken)
+            .when()
+                .get("/api/user/account")
+            .then()
+                .statusCode(200);
+        } finally {
+            given()
+                .cookie("access_token", accessToken)
+            .when()
+                .delete("/api/auth/delete-account")
+            .then()
+                .statusCode(204);
+        }
+    }
+
+    @Test
+    void loginCreatesIndependentSessionAndCanRevokeAnotherSession() {
+        String username = uniqueUsername();
+        String password = "test-password-123";
+        Response signup = signup(username, username + "test@example.test", password);
+        signup.then().statusCode(201);
+        String firstSessionToken = signup.getCookie("session_token");
+
+        Response login = given()
+            .contentType(ContentType.JSON)
+            .header("User-Agent", "Second Test Browser")
+            .body(Map.of("username", username, "password", password))
+        .when()
+            .post("/api/auth/login");
+        login.then().statusCode(204);
+        String secondSessionToken = login.getCookie("session_token");
+        String secondAccessToken = login.getCookie("access_token");
+        assertNotNull(secondSessionToken);
+        assertNotNull(secondAccessToken);
+
+        try {
+            given()
+                .cookie("access_token", secondAccessToken)
+                .cookie("session_token", secondSessionToken)
+            .when()
+                .get("/api/auth/sessions")
+            .then()
+                .statusCode(200)
+                .body("size()", equalTo(2))
+                .body("find { it.current }.userAgent", equalTo("Second Test Browser"));
+
+            Long firstSessionId = given()
+                .cookie("access_token", secondAccessToken)
+                .cookie("session_token", secondSessionToken)
+            .when()
+                .get("/api/auth/sessions")
+            .then()
+                .extract()
+                .jsonPath()
+                .getLong("find { !it.current }.id");
+
+            given()
+                .cookie("access_token", secondAccessToken)
+                .cookie("session_token", secondSessionToken)
+            .when()
+                .delete("/api/auth/sessions/" + firstSessionId)
+            .then()
+                .statusCode(204);
+
+            given()
+                .contentType(ContentType.JSON)
+                .cookie("session_token", firstSessionToken)
+            .when()
+                .post("/api/auth/refresh")
+            .then()
+                .statusCode(401);
+        } finally {
+            given()
+                .cookie("access_token", secondAccessToken)
+            .when()
+                .delete("/api/auth/delete-account")
+            .then()
+                .statusCode(204);
+        }
     }
 
     private Response signup(String username, String email, String password) {
